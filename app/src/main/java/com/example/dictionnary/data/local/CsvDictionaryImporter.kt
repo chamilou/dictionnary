@@ -54,8 +54,6 @@ class CsvDictionaryImporter(
                         notes = valueAt(row, indices["notes"]),
                         nativeChecked = nativeChecked
                     )
-                    val sourceFile = valueAt(row, indices["source_file"])
-                    val sourcePage = valueAt(row, indices["source_page"])
                     val englishChecked = valueAt(row, indices["english_checked"])
                     val englishSource = valueAt(row, indices["english_source"])
                     val avarRussianStatus = checkedStatusFromNativeReview(nativeChecked)
@@ -65,8 +63,8 @@ class CsvDictionaryImporter(
                         category = category.ifBlank { null },
                         type = type.ifBlank { null },
                         notes = notes.ifBlank { null },
-                        sourceFile = sourceFile.ifBlank { null },
-                        sourcePage = sourcePage.ifBlank { null },
+                        sourceFile = null,
+                        sourcePage = null,
                         createdAt = now,
                         updatedAt = now
                     )
@@ -204,12 +202,16 @@ internal fun normalizeEntryNotes(
     if (trimmedNotes.isBlank()) {
         return ""
     }
-    if (!nativeChecked.equals("yes", ignoreCase = true)) {
-        return trimmedNotes
-    }
 
     return trimmedNotes
-        .replace(Regex("""(?:[;,]\s*|\s+)needs native check\.?$""", RegexOption.IGNORE_CASE), "")
+        .replace(
+            Regex("""^\s*auto-extracted from dictionary headword(?:[;,]\s*)?""", RegexOption.IGNORE_CASE),
+            ""
+        )
+        .replace(
+            Regex("""(?:^|[;,]\s*|\s+)needs native check\.?$""", RegexOption.IGNORE_CASE),
+            ""
+        )
         .trim()
         .trimEnd(';', ',', ' ')
 }

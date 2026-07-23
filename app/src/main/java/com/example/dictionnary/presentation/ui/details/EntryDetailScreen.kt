@@ -187,20 +187,6 @@ fun EntryDetailScreen(
                     }
                 }
 
-                if (!entry.sourceFile.isNullOrBlank() || !entry.sourcePage.isNullOrBlank()) {
-                    item {
-                        SectionCard(title = stringResource(R.string.source)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                if (!entry.sourceFile.isNullOrBlank()) {
-                                    MetadataRow(label = stringResource(R.string.file), value = entry.sourceFile)
-                                }
-                                if (!entry.sourcePage.isNullOrBlank()) {
-                                    MetadataRow(label = stringResource(R.string.page), value = entry.sourcePage)
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }

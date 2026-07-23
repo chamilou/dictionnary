@@ -85,8 +85,15 @@ Current import strategy:
 
 - the app does not ship a prebuilt SQLite database from an external tools pipeline
 - instead, it imports the CSV into Room on first launch if the local database is empty
+- when the bundled seed fingerprint or import version changes, the app clears local Room tables and re-imports the CSV
 
 This matters because earlier planning assumed a separate CSV-to-SQLite build pipeline. That is not how the current app works.
+
+Current side effect of seed refresh:
+
+- local favorites are lost
+- local recent searches are lost
+- local saved corrections are lost
 
 ## 6. Current Data Model
 

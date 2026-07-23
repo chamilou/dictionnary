@@ -413,6 +413,6 @@ class DictionaryRepository(context: Context) {
         private const val SEED_ASSET_NAME = "avar_russian_english.csv"
         private const val KEY_INDEXED_SEED_FINGERPRINT = "indexed_seed_fingerprint"
         private const val KEY_INDEXED_SEED_VERSION = "indexed_seed_version"
-        private const val SEED_IMPORT_VERSION = 1
+        private const val SEED_IMPORT_VERSION = 2
     }
 }

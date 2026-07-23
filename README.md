@@ -23,7 +23,7 @@ This project is no longer an empty prototype. It now has:
   - result rows with favorite action, bookmark state, and status chips
   - training flashcards with chosen-word and random-word modes
   - training roadmap split into flashcards now and voice pronunciation later
-  - entry detail screen with source metadata and Russian bridge content
+  - entry detail screen with notes, metadata, and Russian bridge content
   - a settings surface for theme, UI language, app info, references, direction counts, and contact placeholder
 
 ## Important Reality Check
@@ -64,6 +64,11 @@ Key files:
 - [DictionaryEntities.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/DictionaryEntities.kt:1)
 - [CsvDictionaryImporter.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/CsvDictionaryImporter.kt:1)
 - [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/repository/DictionaryRepository.kt:1)
+
+Seed import side effect:
+
+- When the bundled CSV fingerprint or seed import version changes, the app clears all local Room tables and re-imports the seed data.
+- That also removes locally stored favorites, recent searches, and saved corrections on the device.
 
 ## Search Behavior
 

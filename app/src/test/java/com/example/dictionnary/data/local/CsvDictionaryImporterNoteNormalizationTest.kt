@@ -12,20 +12,17 @@ class CsvDictionaryImporterNoteNormalizationTest {
             nativeChecked = "yes"
         )
 
-        assertEquals("auto-extracted from dictionary headword", normalized)
+        assertEquals("", normalized)
     }
 
     @Test
-    fun normalizeEntryNotes_keepsNativeCheckSuffix_whenNotChecked() {
+    fun normalizeEntryNotes_removesNativeCheckSuffix_whenNotChecked() {
         val normalized = normalizeEntryNotes(
             notes = "auto-extracted from dictionary headword; needs native check",
             nativeChecked = "no"
         )
 
-        assertEquals(
-            "auto-extracted from dictionary headword; needs native check",
-            normalized
-        )
+        assertEquals("", normalized)
     }
 
     @Test
@@ -35,9 +32,6 @@ class CsvDictionaryImporterNoteNormalizationTest {
             nativeChecked = "yes"
         )
 
-        assertEquals(
-            "auto-extracted from dictionary headword; grammar/label: (-ялъ, -ялъул)",
-            normalized
-        )
+        assertEquals("grammar/label: (-ялъ, -ялъул)", normalized)
     }
 }

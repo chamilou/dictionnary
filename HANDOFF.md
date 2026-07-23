@@ -14,7 +14,7 @@
   - improved result rows
 - Added entry detail flow:
   - tap a result row or favorite to open details
-  - show Avar headword, preferred translation, Russian bridge, notes, metadata, and source reference
+  - show Avar headword, preferred translation, Russian bridge, notes, and metadata
 - Added lightweight verification flow and first unit tests
 - Added paged search with a fast first 100 results and explicit load-more action
 - Replaced the training placeholder with working flashcards:
@@ -78,6 +78,7 @@ Reason:
 - Verification is intentionally light; there are only structural/normalization tests so far
 - No tests yet for repository paging behavior or UI state behavior
 - `fallbackToDestructiveMigration` will wipe local data on schema changes
+- Seed fingerprint/version refreshes also wipe and rebuild local Room data, which currently removes device-local favorites, recent searches, and corrections
 
 ## Todo Addendum
 
