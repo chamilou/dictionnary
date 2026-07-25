@@ -51,4 +51,14 @@ class CsvDictionaryImporterNoteNormalizationTest {
     fun shouldIndexAvarHeadword_keepsRegularAvarWords() {
         assertTrue(shouldIndexAvarHeadword("гьаб"))
     }
+
+    @Test
+    fun shouldIndexRussianTranslation_skipsParenthesisPrefixedEntries() {
+        assertFalse(shouldIndexRussianTranslation("(по)везти"))
+    }
+
+    @Test
+    fun shouldIndexRussianTranslation_keepsRegularRussianWords() {
+        assertTrue(shouldIndexRussianTranslation("везти"))
+    }
 }

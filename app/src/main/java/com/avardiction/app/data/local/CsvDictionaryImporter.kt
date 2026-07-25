@@ -49,7 +49,7 @@ class CsvDictionaryImporter(
 
                     val row = parseCsvLine(line)
                     val avar = preferredValue(row, indices, "corrected_avar", "avar")
-                    val russian = preferredValue(row, indices, "corrected_russian", "russian")
+                    val russian = preferredRussianValue(row, indices)
                     val english = valueAt(row, indices["english"])
 
                     if (avar.isBlank() && russian.isBlank() && english.isBlank()) {
@@ -97,7 +97,7 @@ class CsvDictionaryImporter(
                         )
                     }
 
-                    if (russian.isNotBlank()) {
+                    if (russian.isNotBlank() && shouldIndexRussianTranslation(russian)) {
                         val normalizedRussian = SearchNormalizer.normalize(russian, "ru")
                         translations += TranslationEntity(
                             entryId = nextEntryId,
@@ -148,6 +148,24 @@ class CsvDictionaryImporter(
             return corrected
         }
         return valueAt(row, indices[originalColumn])
+    }
+
+    private fun preferredRussianValue(
+        row: List<String>,
+        indices: Map<String, Int>
+    ): String {
+        val corrected = valueAt(row, indices["corrected_russian"])
+        if (corrected.isNotBlank()) {
+            return corrected
+        }
+
+        val original = valueAt(row, indices["russian"])
+        val russianKey = valueAt(row, indices["russian_key"])
+        return if (startsWithExcludedRussianPrefix(original) && russianKey.isNotBlank()) {
+            russianKey
+        } else {
+            original
+        }
     }
 
     private fun valueAt(row: List<String>, index: Int?): String {
@@ -224,6 +242,24 @@ internal fun shouldIndexAvarHeadword(avar: String): Boolean {
     }
 
     return trimmed.first() !in setOf('¦', ':', '-')
+}
+
+internal fun shouldIndexRussianTranslation(russian: String): Boolean {
+    val trimmed = russian.trimStart()
+    if (trimmed.isBlank()) {
+        return false
+    }
+
+    return !startsWithExcludedRussianPrefix(trimmed)
+}
+
+private fun startsWithExcludedRussianPrefix(value: String): Boolean {
+    val trimmed = value.trimStart()
+    if (trimmed.isBlank()) {
+        return false
+    }
+
+    return trimmed.first() == '('
 }
 
 internal fun normalizeEntryNotes(

@@ -20,7 +20,7 @@ append_heading() {
 append_paths() {
     local target_path="$1"
     if [ -d "$target_path" ]; then
-        find "$target_path" -type f | sort | sed 's#^\./##; s#^#- `#; s#$#`#' >> "$TMP_FILE"
+        find "$target_path" -type f ! -name '.DS_Store' | sort | sed 's#^\./##; s#^#- `#; s#$#`#' >> "$TMP_FILE"
     elif [ -f "$target_path" ]; then
         print -- "- \`$target_path\`" >> "$TMP_FILE"
     fi

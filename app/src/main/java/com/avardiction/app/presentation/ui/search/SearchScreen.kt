@@ -2176,7 +2176,15 @@ private fun themeModeDisplayName(themeMode: AppThemeMode): String {
 
 private fun selectedEntry(uiState: DictionaryUiState): DictionaryEntryResult? {
     val selectedEntryId = uiState.selectedEntryId ?: return null
-    return (uiState.searchResults + uiState.favorites)
+    val visibleEntries = buildList {
+        addAll(uiState.searchResults)
+        addAll(uiState.browseEntries)
+        addAll(uiState.favorites)
+        addAll(uiState.trainingSuggestions)
+        uiState.selectedTrainingEntry?.let(::add)
+    }
+
+    return visibleEntries
         .distinctBy { it.entryId }
         .firstOrNull { it.entryId == selectedEntryId }
 }

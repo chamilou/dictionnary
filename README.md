@@ -14,13 +14,16 @@ This project is no longer an empty prototype. It now has:
 - A local Room database stored as `dictionary.db`
 - First-run CSV import from `app/src/main/assets/avar_russian_english.csv`
 - Search over imported Avar, Russian, and English entries
+- A staged first-launch database build flow with visible progress instead of a blank wait
 - Paged search with a fast first 100 results and explicit load-more
+- Indexed alphabet browse with an explicit 46-letter Avar letter set
 - Favorites and recent searches persisted locally
 - A Compose search screen with:
   - left-aligned language direction selector
   - `Search`, `Favorites`, `Recent`, and `Training` tabs
-  - larger search card with mic and filter affordances
+  - compact search card with mic and filter affordances
   - result rows with favorite action, bookmark state, and status chips
+  - row taps that open the detail screen from search, browse, favorites, recent, and training-backed selections
   - training flashcards with chosen-word and random-word modes
   - training roadmap split into flashcards now and voice pronunciation later
   - entry detail screen with notes, metadata, and Russian bridge content
@@ -47,7 +50,7 @@ That means:
 
 ## Data Model
 
-Room database version: `6`
+Room database version: `10`
 
 Tables:
 
@@ -70,14 +73,28 @@ Seed import side effect:
 - When the bundled CSV fingerprint or seed import version changes, the app clears all local Room tables and re-imports the seed data.
 - That also removes locally stored favorites, recent searches, and saved corrections on the device.
 
+Seed import behavior:
+
+- First-launch seeding is guarded by a single-flight mutex so parallel repository calls do not start duplicate imports.
+- Import progress is reported in stages: preparing, parsing rows, writing entries, writing translations, finalizing.
+
 ## Search Behavior
 
 - Search is performed against the selected source language
-- Imported entries are normalized before search
+- Imported entries are normalized before search and get precomputed `browseKey` values during import
+- DAO ranking prefers exact match, then prefix, then word-start, then general substring matches
 - Search results are fetched in pages of 100 items
 - Recent searches are recorded only when the query is not blank
 - Favorites are stored locally in Room
 - When a target language is selected, the UI still keeps Avar visible and may also keep Russian visible as bridge content
+- Tapping a found word opens the detail screen consistently across result sources
+
+Browse and indexing rules:
+
+- Avar browse uses an explicit 46-letter alphabet and treats variants like `Г`, `Гь`, `Гъ`, `ГI` and `К`, `Кь`, `Къ`, `КI` as different letters.
+- Digits are excluded from browse indexing.
+- Morphology separators such as `¦`, `:`, and `-` are not indexed as starting characters for Avar headwords.
+- Russian reverse-search indexing also excludes entries whose visible source starts with `(` and falls back to the normalized Russian key when needed.
 
 Current limitation:
 
@@ -134,8 +151,8 @@ APK build command:
 
 Last verified:
 
-- `:app:compileDebugKotlin` succeeded on July 16, 2026
-- `:app:testDebugUnitTest` succeeded on July 8, 2026
+- `:app:assembleDebug` succeeded on July 25, 2026
+- `:app:testDebugUnitTest --tests com.avardiction.app.data.local.CsvDictionaryImporterNoteNormalizationTest` succeeded on July 25, 2026
 
 ## Project Structure
 
@@ -152,7 +169,7 @@ Last verified:
 
 ## Recommended Next Steps
 
-1. Simplify and document the search model so lookup language, display language, and direction behavior are explicit in code and UI.
+1. Measure cold-start and first-import behavior on older Android devices instead of assuming desktop-speed emulator performance.
 2. Decide whether unsupported language directions should be hidden, disabled, or labeled more aggressively until data exists.
 3. Add real bookmark storage instead of a note-state icon.
 4. Add correction submission flow backed by the existing `corrections` table.
@@ -165,7 +182,9 @@ Last verified:
 
 - The database currently uses `fallbackToDestructiveMigration`, which is acceptable for early iteration but not for production data safety.
 - There is an older reusable `LanguageSelector` composable in the codebase that is not part of the current main screen flow.
-- The current search implementation matches only in the selected source language, then filters visible translations afterward; this works, but the direction model is not clear enough yet.
+- The current search implementation matches only in the selected source language, then filters visible translations afterward; this works, but the direction model is still more complex than the UI suggests.
+- Alphabet browse is now SQL/index driven through `browseKey` values instead of scanning and deriving letters on the main path of first launch.
+- First-launch waiting is now user-visible through import progress UI, but the import still rebuilds the full local dataset synchronously before search becomes usable.
 - The current training flow is stateless practice over visible dictionary entries; it does not yet track progress, scoring, spaced repetition, or voice pronunciation.
 - The Material 3 theme now uses explicit branded light/dark role pairs, including tertiary container roles and stronger outline colors for interactive boundaries.
 - Search and detail screens now derive their major cards, bottom sheets, navigation bar, flashcards, and background gradients from `MaterialTheme.colorScheme` instead of hardcoded light palette tokens.
