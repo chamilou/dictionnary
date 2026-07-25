@@ -153,6 +153,9 @@ Last verified:
 
 - `:app:assembleDebug` succeeded on July 25, 2026
 - `:app:testDebugUnitTest --tests com.avardiction.app.data.local.CsvDictionaryImporterNoteNormalizationTest` succeeded on July 25, 2026
+- Local macrobenchmark snapshot on a Pixel 5 (Android 14) ran on July 25, 2026:
+  `coldStartup` passed; `searchTypingAndScrollFrames` and `searchTypingAndScrollPower`
+  failed with `Search results list not found for queries ав, аб, а`
 
 ## Project Structure
 
@@ -169,7 +172,7 @@ Last verified:
 
 ## Recommended Next Steps
 
-1. Measure cold-start and first-import behavior on older Android devices instead of assuming desktop-speed emulator performance.
+1. Stabilize the search macrobenchmark path before treating frame/power numbers as publishable; the latest Pixel 5 run passed `coldStartup` but not the two search benchmarks.
 2. Decide whether unsupported language directions should be hidden, disabled, or labeled more aggressively until data exists.
 3. Add real bookmark storage instead of a note-state icon.
 4. Add correction submission flow backed by the existing `corrections` table.

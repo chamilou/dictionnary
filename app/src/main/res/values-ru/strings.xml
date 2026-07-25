@@ -51,6 +51,7 @@
     <string name="privacy_body_support">Если вы связываетесь с поддержкой вне приложения, переданная вами информация используется только для ответа на ваш запрос.</string>
     <string name="support_title">Поддержка</string>
     <string name="support_body">Email поддержки: avardiction@gmail.com</string>
+    <string name="support_email_address">avardiction@gmail.com</string>
     <string name="support_status_note">Используйте этот адрес для вопросов, исправлений, сообщений о проблемах и предложений по улучшению словаря.</string>
     <string name="support_release_note">При сообщении об ошибке укажите версию приложения, модель устройства, версию Android и краткое описание проблемы.</string>
     <string name="references_title">Источники</string>

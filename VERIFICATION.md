@@ -20,6 +20,22 @@ What these checks cover:
 - the CSV asset still has the expected header shape
 - the CSV asset still contains a substantial number of importable rows
 
+## Latest Device Benchmark Snapshot
+
+Latest recorded local macrobenchmark run:
+
+- Date: July 25, 2026
+- Device: Pixel 5, Android 14
+- Command: `./gradlew :macrobenchmark:connectedBenchmarkAndroidTest`
+- Result:
+  - `coldStartup`: passed
+  - `searchTypingAndScrollFrames`: failed
+  - `searchTypingAndScrollPower`: failed
+- Failure reason for both search benchmarks:
+  `Search results list not found for queries ав, аб, а`
+
+Treat this as a development snapshot, not a release gate. The benchmark module is kept local/optional and is not required for normal app shipping.
+
 ## Manual Verification
 
 Use this short checklist when you want to spot-check the trusted dictionary data in the app.

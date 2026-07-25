@@ -51,6 +51,7 @@
     <string name="privacy_body_support">If you contact support outside the app, the information you send is used only to respond to your request.</string>
     <string name="support_title">Support</string>
     <string name="support_body">Support email: avardiction@gmail.com</string>
+    <string name="support_email_address">avardiction@gmail.com</string>
     <string name="support_status_note">Use this address for questions, corrections, problems, and suggestions for improving the dictionary.</string>
     <string name="support_release_note">When reporting a problem, include the app version, device model, Android version, and a short description of the issue.</string>
     <string name="references_title">References</string>

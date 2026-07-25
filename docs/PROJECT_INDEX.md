@@ -230,7 +230,7 @@ This section focuses on top-level and workflow-critical functions so you can fin
 
 - The project index is curated, but the broader file/function inventory should be refreshed after structural changes by rerunning the script.
 - Search behavior and direction support are still complex enough that some deeper logic will still require reading the exact DAO/view-model code.
-- Startup UX is improved with visible seed progress, but real low-end device performance still needs measurement.
+- Startup UX is improved with visible seed progress, and a July 25, 2026 local Pixel 5 macrobenchmark run confirmed `coldStartup` passes, but the search frame/power benchmarks still fail because the benchmark cannot surface search results for `ав`, `аб`, or `а`.
 - Unsupported language directions still exist at the UI level without seeded dictionary data.
 - The settings surface is now implemented, but privacy/support/legal content is still placeholder-level.
 - The palette is branded and contrast-tuned, and the major screens now avoid hardcoded light surfaces, but any further theme changes should still be checked visually on device because Compose components reuse color roles in different ways.

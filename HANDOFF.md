@@ -71,6 +71,21 @@ Reason:
 - English is present, but its quality signaling is still draft-grade
 - the next highest-value work is publication readiness plus real device performance validation rather than new features
 
+## Stop For Today Todo
+
+1. Replace placeholder privacy, support, and legal text with production-ready content.
+2. Decide whether unsupported language directions should be hidden, disabled, or visibly marked as not ready.
+3. Review whether the draft English dataset is good enough for public testing.
+4. Continue search optimization with real-device profiling, but do not block release prep on macrobenchmark stability.
+5. If benchmark work resumes, treat the latest local result as the baseline:
+   - July 25, 2026
+   - Pixel 5 / Android 14
+   - `coldStartup` passed
+   - `searchTypingAndScrollFrames` failed
+   - `searchTypingAndScrollPower` failed
+   - shared failure: `Search results list not found for queries ав, аб, а`
+6. Before any Google Play production release, run an Internal or Closed Test first and prepare a real privacy policy.
+
 ## Files Most Likely To Touch Next
 
 - [SearchScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/search/SearchScreen.kt:45)

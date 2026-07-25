@@ -16,3 +16,4 @@ local.properties
 /.gradle-user-home/
 /.kotlin/
 /app/release/
+/macrobenchmark/

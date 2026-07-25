@@ -89,6 +89,7 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
     private var refreshJob: Job? = null
     private var trainingSearchJob: Job? = null
     private var browseJob: Job? = null
+    private var seedWasInProgress = false
 
     var uiState by mutableStateOf(
         DictionaryUiState(
@@ -108,16 +109,26 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             repository.seedStatus.collectLatest { status ->
                 uiState = when (status) {
-                    SeedStatus.Idle -> uiState.copy(
-                        databaseBuildStage = null,
-                        databaseBuildProcessed = 0,
-                        databaseBuildTotal = 0
-                    )
-                    is SeedStatus.InProgress -> uiState.copy(
-                        databaseBuildStage = status.phase.toUiStage(),
-                        databaseBuildProcessed = status.processed,
-                        databaseBuildTotal = status.total
-                    )
+                    SeedStatus.Idle -> {
+                        val shouldReloadSettings = seedWasInProgress
+                        seedWasInProgress = false
+                        if (shouldReloadSettings) {
+                            loadSettingsInfo(forceReload = true)
+                        }
+                        uiState.copy(
+                            databaseBuildStage = null,
+                            databaseBuildProcessed = 0,
+                            databaseBuildTotal = 0
+                        )
+                    }
+                    is SeedStatus.InProgress -> {
+                        seedWasInProgress = true
+                        uiState.copy(
+                            databaseBuildStage = status.phase.toUiStage(),
+                            databaseBuildProcessed = status.processed,
+                            databaseBuildTotal = status.total
+                        )
+                    }
                 }
             }
         }

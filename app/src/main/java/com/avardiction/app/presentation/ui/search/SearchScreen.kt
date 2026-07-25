@@ -1,4 +1,8 @@
 package com.avardiction.app.presentation.ui.search
+
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -23,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -31,8 +36,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +62,13 @@ import com.avardiction.app.presentation.viewmodel.DictionaryViewModel
 import com.avardiction.app.presentation.viewmodel.DirectionWordCount
 import com.avardiction.app.presentation.viewmodel.TrainingWordSource
 
+private const val BENCHMARK_SEARCH_INPUT_TAG = "search_input"
+private const val BENCHMARK_SEARCH_RESULTS_TAG = "search_results"
+private const val BENCHMARK_SEARCH_LOADING_TAG = "search_loading"
+private const val BENCHMARK_SEARCH_EMPTY_TAG = "search_empty"
+private const val BENCHMARK_DATABASE_BUILD_TAG = "database_build_loading"
+
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     viewModel: DictionaryViewModel,
@@ -109,7 +124,7 @@ fun SearchScreen(
                 },
                 onSettingsClick = {
                     actionsMenuExpanded = false
-                    viewModel.loadSettingsInfo()
+                    viewModel.loadSettingsInfo(forceReload = true)
                     settingsSheetExpanded = true
                 }
             )
@@ -126,6 +141,7 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(themedScreenBackgroundBrush())
+                .semantics { testTagsAsResourceId = true }
                 .padding(innerPadding)
         ) {
             Column(
@@ -149,6 +165,7 @@ fun SearchScreen(
                         themeMode = uiState.themeMode,
                         uiLanguageLabel = uiLanguageDisplayName(uiState.uiLanguageCode),
                         totalEntryCount = uiState.totalEntryCount,
+                        isLoading = uiState.isSettingsInfoLoading,
                         onDismiss = { settingsSheetExpanded = false },
                         onThemeClick = { themeDialogExpanded = true },
                         onUiLanguageClick = { uiLanguageDialogExpanded = true },
@@ -157,7 +174,7 @@ fun SearchScreen(
                         onSupportClick = { supportDialogExpanded = true },
                         onReferencesClick = { referencesDialogExpanded = true },
                         onCoverageClick = {
-                            viewModel.loadSettingsInfo()
+                            viewModel.loadSettingsInfo(forceReload = true)
                             coverageDialogExpanded = true
                         }
                     )
@@ -499,6 +516,7 @@ private fun SettingsSheet(
     themeMode: AppThemeMode,
     uiLanguageLabel: String,
     totalEntryCount: Int,
+    isLoading: Boolean,
     onDismiss: () -> Unit,
     onThemeClick: () -> Unit,
     onUiLanguageClick: () -> Unit,
@@ -557,10 +575,14 @@ private fun SettingsSheet(
             )
             SettingsActionRow(
                 title = stringResource(R.string.settings_word_counts),
-                subtitle = stringResource(
-                    R.string.settings_word_counts_summary_format,
-                    totalEntryCount
-                ),
+                subtitle = if (isLoading) {
+                    stringResource(R.string.settings_loading)
+                } else {
+                    stringResource(
+                        R.string.settings_word_counts_summary_format,
+                        totalEntryCount
+                    )
+                },
                 onClick = onCoverageClick
             )
         }
@@ -728,6 +750,21 @@ private fun PrivacyDialog(onDismiss: () -> Unit) {
 
 @Composable
 private fun SupportDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val supportEmail = stringResource(R.string.support_email_address)
+
+    fun openSupportEmail() {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:$supportEmail")
+        }
+        if (intent.resolveActivity(context.packageManager) != null) {
+            try {
+                context.startActivity(intent)
+            } catch (_: ActivityNotFoundException) {
+            }
+        }
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.support_title)) },
@@ -741,6 +778,16 @@ private fun SupportDialog(onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                TextButton(
+                    onClick = ::openSupportEmail,
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        text = supportEmail,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Text(
                     text = stringResource(R.string.support_status_note),
                     style = MaterialTheme.typography.bodyMedium,
@@ -910,10 +957,11 @@ private fun UiLanguageDialog(
 @Composable
 private fun MessageCard(
     title: String,
-    body: String
+    body: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -955,6 +1003,7 @@ private fun SearchCard(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag(BENCHMARK_SEARCH_INPUT_TAG)
                 .padding(horizontal = 6.dp, vertical = 4.dp),
             placeholder = {
                 Text(
@@ -1015,7 +1064,7 @@ private fun SearchResultsContent(
     }
 
     if (uiState.isLoading) {
-        LoadingState()
+        LoadingState(modifier = Modifier.testTag(BENCHMARK_SEARCH_LOADING_TAG))
         return
     }
 
@@ -1033,13 +1082,16 @@ private fun SearchResultsContent(
     if (uiState.searchResults.isEmpty()) {
         MessageCard(
             title = stringResource(R.string.no_entries_found_title),
-            body = stringResource(R.string.no_entries_found_body)
+            body = stringResource(R.string.no_entries_found_body),
+            modifier = Modifier.testTag(BENCHMARK_SEARCH_EMPTY_TAG)
         )
         return
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(BENCHMARK_SEARCH_RESULTS_TAG),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
@@ -1849,9 +1901,13 @@ private fun QuickDirectionChip(
 }
 
 @Composable
-private fun LoadingState() {
+private fun LoadingState(
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(top = 40.dp),
         contentAlignment = Alignment.TopCenter
     ) {
         CircularProgressIndicator(
@@ -1908,7 +1964,9 @@ private fun DatabaseBuildLoadingState(
             shape = RoundedCornerShape(28.dp),
             tonalElevation = 2.dp,
             shadowElevation = 2.dp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(BENCHMARK_DATABASE_BUILD_TAG)
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp),
