@@ -59,13 +59,13 @@ Reason:
 
 ## Files Most Likely To Touch Next
 
-- [SearchScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/presentation/ui/search/SearchScreen.kt:45)
-- [DictionaryViewModel.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/presentation/viewmodel/DictionaryViewModel.kt:20)
-- [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/repository/DictionaryRepository.kt:16)
-- [DictionaryDao.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/DictionaryDao.kt:8)
-- [AppThemeManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/presentation/ui/AppThemeManager.kt:1)
-- [UiLanguageManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/presentation/ui/UiLanguageManager.kt:1)
-- [EntryDetailScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/presentation/ui/details/EntryDetailScreen.kt:45)
+- [SearchScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/search/SearchScreen.kt:45)
+- [DictionaryViewModel.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/viewmodel/DictionaryViewModel.kt:20)
+- [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/repository/DictionaryRepository.kt:16)
+- [DictionaryDao.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/DictionaryDao.kt:8)
+- [AppThemeManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/AppThemeManager.kt:1)
+- [UiLanguageManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/UiLanguageManager.kt:1)
+- [EntryDetailScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/details/EntryDetailScreen.kt:45)
 - [VERIFICATION.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/VERIFICATION.md:1)
 
 ## Risks / Gaps

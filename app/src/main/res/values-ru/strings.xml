@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Словарь</string>
+    <string name="app_name">AvarDiction</string>
     <string name="language_all">Все переводы</string>
     <string name="language_avar">Аварский</string>
     <string name="language_english">Английский</string>
@@ -76,6 +76,11 @@
     <string name="clear_query">Очистить</string>
     <string name="no_entries_found_title">Ничего не найдено</string>
     <string name="no_entries_found_body">Попробуйте другое написание или смените направление перевода в селекторе.</string>
+    <string name="alphabet_browse_title">Просмотр по первой букве</string>
+    <string name="alphabet_browse_body">Выберите букву текущего языка поиска, чтобы открыть подходящие слова.</string>
+    <string name="alphabet_browse_selected_letter_format">Слова на букву %1$s</string>
+    <string name="alphabet_browse_empty_title">Для этой буквы слов нет</string>
+    <string name="alphabet_browse_empty_body">Выберите другую букву или смените направление перевода.</string>
     <string name="no_favorites_title">Избранного пока нет</string>
     <string name="no_favorites_body">Сохраняйте важные слова здесь, чтобы быстро возвращаться к ним офлайн.</string>
     <string name="no_recent_searches_title">Недавних поисков нет</string>
@@ -103,6 +108,13 @@
     <string name="empty_search_body">Выберите направление и начните поиск по слову или корню.</string>
     <string name="quick_shortcuts">Быстрые варианты</string>
     <string name="loading_more_entries">Загружаем ещё слова…</string>
+    <string name="database_build_title">Подготовка локального словаря</string>
+    <string name="database_build_body">Словарь подготавливается на этом устройстве. При первом запуске или после обновления это может занять больше времени.</string>
+    <string name="database_build_stage_preparing">Подготовка локальной базы…</string>
+    <string name="database_build_stage_reading_format">Чтение строк словаря: %1$d</string>
+    <string name="database_build_stage_entries_format">Сохранение записей: %1$d из %2$d</string>
+    <string name="database_build_stage_translations_format">Сохранение переводов: %1$d из %2$d</string>
+    <string name="database_build_stage_finalizing">Завершаем локальный индекс…</string>
     <string name="more_matches_available">Доступны дополнительные совпадения</string>
     <string name="more_matches_shown_format">Показано %1$d, доступно больше</string>
     <string name="load_more_results">Загрузить ещё 100</string>

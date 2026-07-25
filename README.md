@@ -59,11 +59,11 @@ Tables:
 
 Key files:
 
-- [DictionaryDatabase.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/DictionaryDatabase.kt:1)
-- [DictionaryDao.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/DictionaryDao.kt:1)
-- [DictionaryEntities.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/DictionaryEntities.kt:1)
-- [CsvDictionaryImporter.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/local/CsvDictionaryImporter.kt:1)
-- [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/example/dictionnary/data/repository/DictionaryRepository.kt:1)
+- [DictionaryDatabase.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/DictionaryDatabase.kt:1)
+- [DictionaryDao.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/DictionaryDao.kt:1)
+- [DictionaryEntities.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/DictionaryEntities.kt:1)
+- [CsvDictionaryImporter.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/CsvDictionaryImporter.kt:1)
+- [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/repository/DictionaryRepository.kt:1)
 
 Seed import side effect:
 
@@ -141,13 +141,13 @@ Last verified:
 
 - `app/src/main/assets/`
   - source CSV copied into app assets for offline seed
-- `app/src/main/java/com/example/dictionnary/data/`
+- `app/src/main/java/com/avardiction/app/data/`
   - Room entities, DAO, DB, importer, repository
-- `app/src/main/java/com/example/dictionnary/domain/`
+- `app/src/main/java/com/avardiction/app/domain/`
   - domain models and language enums
-- `app/src/main/java/com/example/dictionnary/presentation/`
+- `app/src/main/java/com/avardiction/app/presentation/`
   - Compose UI and view model
-- `app/src/main/java/com/example/dictionnary/ui/theme/`
+- `app/src/main/java/com/avardiction/app/ui/theme/`
   - colors, typography, Material theme
 
 ## Recommended Next Steps

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Dictionary</string>
+    <string name="app_name">AvarDiction</string>
     <string name="language_all">Киналго</string>
     <string name="language_avar">МагIарул</string>
     <string name="language_english">Ингилис</string>
@@ -20,9 +20,13 @@
     <string name="settings_theme">Theme</string>
     <string name="settings_ui_language">МацI</string>
     <string name="settings_about">About the app</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_support">Support</string>
     <string name="settings_references">References</string>
     <string name="settings_word_counts">Word counts by direction</string>
     <string name="settings_about_summary">Offline-first Avar dictionary and training app</string>
+    <string name="settings_privacy_summary">On-device storage, no account, no analytics</string>
+    <string name="settings_support_summary">Support email: avardiction@gmail.com</string>
     <string name="settings_references_summary">Bundled dataset sources and bridge notes</string>
     <string name="settings_word_counts_summary_format">%1$d base entries indexed locally</string>
     <string name="settings_loading">Loading settings data…</string>
@@ -41,7 +45,18 @@
     <string name="about_app_version_format">Version %1$s (%2$d)</string>
     <string name="about_app_entries_format">%1$d base entries are currently indexed on this device.</string>
     <string name="about_app_dataset_note">Current bundled content covers Avar, Russian, and English.</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_body_storage">This app stores your searches, favorites, recent history, and app settings on your device.</string>
+    <string name="privacy_body_network">The app does not require an account and does not send dictionary usage, search queries, or training activity to a remote server.</string>
+    <string name="privacy_body_support">If you contact support outside the app, the information you send is used only to respond to your request.</string>
+    <string name="support_title">Support</string>
+    <string name="support_body">Support email: avardiction@gmail.com</string>
+    <string name="support_status_note">Use this address for questions, corrections, problems, and suggestions for improving the dictionary.</string>
+    <string name="support_release_note">When reporting a problem, include the app version, device model, Android version, and a short description of the issue.</string>
     <string name="references_title">References</string>
+    <string name="references_intro">The bundled offline dataset was prepared from the following reference materials for dictionary lookup inside the app.</string>
+    <string name="references_avar_source">Base Avar-Russian reference: Аварско-русский словарь: около 36 000 слов / под ред. М. М. Гимбатова. Махачкала: ДНЦ РАН, 2006. 2096 с. ISBN 5-94434-023-1.</string>
+    <string name="references_english_source">Russian-English reference: В. К. Мюллер. Большой англо-русский, русско-английский словарь = Big English-Russian, Russian-English Dictionary: 200 000 слов и выражений. Москва: Эксмо, 2007. ISBN 978-5-699-23745-6.</string>
     <string name="references_english_note">English translations were prepared using a Russian-English reference base for the bundled app dataset.</string>
     <string name="direction_coverage_title">Word coverage by direction</string>
     <string name="direction_coverage_total_entries_format">Total indexed entries: %1$d</string>
@@ -61,6 +76,11 @@
     <string name="clear_query">БацIцIе</string>
     <string name="no_entries_found_title">No entries found</string>
     <string name="no_entries_found_body">Try another spelling or switch the language direction from the selector.</string>
+    <string name="alphabet_browse_title">Балагьизе тIоцебесеб хIарпалдасан</string>
+    <string name="alphabet_browse_body">Гьоркьоб балагьулеб мацIалъул хIарп бище, данде кколел рагIаби рагьизе.</string>
+    <string name="alphabet_browse_selected_letter_format">%1$s хIарпалдасан байбихьулел рагIаби</string>
+    <string name="alphabet_browse_empty_title">Гьеб хIарпалда рагIаби гьечIо</string>
+    <string name="alphabet_browse_empty_body">Цойги хIарп бище яги рахьдузул рахъ хисае.</string>
     <string name="no_favorites_title">No favorites yet</string>
     <string name="no_favorites_body">Save important words here so they stay easy to revisit offline.</string>
     <string name="no_recent_searches_title">No recent searches</string>
@@ -88,6 +108,13 @@
     <string name="empty_search_body">Select a direction and start searching by word or root.</string>
     <string name="quick_shortcuts">Quick shortcuts</string>
     <string name="loading_more_entries">Loading more entries…</string>
+    <string name="database_build_title">Building local dictionary</string>
+    <string name="database_build_body">The dictionary is being prepared on this device. This can take longer on first launch or after an update.</string>
+    <string name="database_build_stage_preparing">Preparing local database…</string>
+    <string name="database_build_stage_reading_format">Reading dictionary rows: %1$d</string>
+    <string name="database_build_stage_entries_format">Saving entries: %1$d of %2$d</string>
+    <string name="database_build_stage_translations_format">Saving translations: %1$d of %2$d</string>
+    <string name="database_build_stage_finalizing">Finalizing local index…</string>
     <string name="more_matches_available">More matches are available</string>
     <string name="more_matches_shown_format">%1$d shown, more available</string>
     <string name="load_more_results">Load 100 more</string>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Dictionary</string>
+    <string name="app_name">AvarDiction</string>
     <string name="language_all">All translations</string>
     <string name="language_avar">Avar</string>
     <string name="language_english">English</string>
@@ -76,6 +76,11 @@
     <string name="clear_query">Clear</string>
     <string name="no_entries_found_title">No entries found</string>
     <string name="no_entries_found_body">Try another spelling or switch the language direction from the selector.</string>
+    <string name="alphabet_browse_title">Browse by first letter</string>
+    <string name="alphabet_browse_body">Choose a letter from the current lookup language to open matching words.</string>
+    <string name="alphabet_browse_selected_letter_format">Words starting with %1$s</string>
+    <string name="alphabet_browse_empty_title">No words for this letter</string>
+    <string name="alphabet_browse_empty_body">Pick another letter or switch the language direction.</string>
     <string name="no_favorites_title">No favorites yet</string>
     <string name="no_favorites_body">Save important words here so they stay easy to revisit offline.</string>
     <string name="no_recent_searches_title">No recent searches</string>
@@ -103,6 +108,13 @@
     <string name="empty_search_body">Select a direction and start searching by word or root.</string>
     <string name="quick_shortcuts">Quick shortcuts</string>
     <string name="loading_more_entries">Loading more entries…</string>
+    <string name="database_build_title">Building local dictionary</string>
+    <string name="database_build_body">The dictionary is being prepared on this device. This can take longer on first launch or after an update.</string>
+    <string name="database_build_stage_preparing">Preparing local database…</string>
+    <string name="database_build_stage_reading_format">Reading dictionary rows: %1$d</string>
+    <string name="database_build_stage_entries_format">Saving entries: %1$d of %2$d</string>
+    <string name="database_build_stage_translations_format">Saving translations: %1$d of %2$d</string>
+    <string name="database_build_stage_finalizing">Finalizing local index…</string>
     <string name="more_matches_available">More matches are available</string>
     <string name="more_matches_shown_format">%1$d shown, more available</string>
     <string name="load_more_results">Load 100 more</string>
