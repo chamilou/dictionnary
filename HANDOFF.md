@@ -42,6 +42,18 @@
   - UI language override independent from system locale
   - app info / references / direction coverage dialogs
   - contact placeholder instead of a real public address
+- Raised the app to `compileSdk = 36` and `targetSdk = 36`
+- Audited Android 16 / API 36 behavior and fixed concrete issues:
+  - saveable tab/dialog state
+  - preserved list and detail scroll state
+  - less stretched large-screen layouts
+  - minSdk-safe app version lookup
+- Cleaned Android / AGP / Kotlin / Gradle warnings:
+  - migrated to AGP 9 built-in Kotlin
+  - upgraded KSP to `2.3.6`
+  - removed deprecated AGP compatibility flags
+  - added wrapper JVM native-access flag so `./gradlew` starts cleanly
+- Added [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1) for Google Play publication work
 
 ## Current Product Truth
 
@@ -52,39 +64,42 @@
 
 ## Best Next Task
 
-Continue performance QA and release hardening next session.
+Continue publication execution next session.
 
 Priority order:
 
-1. Measure cold-start and first-import behavior on at least one older physical Android phone.
-2. Replace placeholder privacy / support / legal content.
-3. Remove, hide, or hard-disable unsupported language directions.
-4. Decide whether draft English quality is acceptable for a first public release.
+1. Configure release signing and produce the first signed `.aab`.
+2. Publish a real privacy policy URL and align the store listing with it.
+3. Prepare Play store assets, descriptions, and Play Console declarations.
+4. Remove, hide, or hard-disable unsupported language directions.
 5. Run a release build and do a manual device QA pass.
 
 Reason:
 
 - the core offline dictionary flow is working
-- the biggest remaining product risk is perceived startup speed on low-end devices
-- settings infrastructure exists, but its legal/support content is still placeholder-grade
+- the highest remaining blocker is release packaging and Play Console readiness, not core app functionality
+- release signing, a public privacy policy URL, and store assets are still missing
 - unsupported language directions still look more complete than they are
 - English is present, but its quality signaling is still draft-grade
-- the next highest-value work is publication readiness plus real device performance validation rather than new features
+- the next highest-value work is publication execution plus a real release QA pass rather than new features
 
 ## Stop For Today Todo
 
-1. Replace placeholder privacy, support, and legal text with production-ready content.
-2. Decide whether unsupported language directions should be hidden, disabled, or visibly marked as not ready.
-3. Review whether the draft English dataset is good enough for public testing.
-4. Continue search optimization with real-device profiling, but do not block release prep on macrobenchmark stability.
-5. If benchmark work resumes, treat the latest local result as the baseline:
+1. Work through [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
+2. Configure release signing and build a signed `.aab`.
+3. Publish a real privacy policy URL.
+4. Prepare Play screenshots, icon set, feature graphic, and listing copy.
+5. Decide whether unsupported language directions should be hidden, disabled, or visibly marked as not ready.
+6. Review whether the draft English dataset is good enough for public testing.
+7. Continue search optimization with real-device profiling, but do not block release prep on macrobenchmark stability.
+8. If benchmark work resumes, treat the latest local result as the baseline:
    - July 25, 2026
    - Pixel 5 / Android 14
    - `coldStartup` passed
    - `searchTypingAndScrollFrames` failed
    - `searchTypingAndScrollPower` failed
    - shared failure: `Search results list not found for queries ав, аб, а`
-6. Before any Google Play production release, run an Internal or Closed Test first and prepare a real privacy policy.
+9. Before any Google Play production release, run an Internal or Closed Test first and prepare a real privacy policy.
 
 ## Files Most Likely To Touch Next
 
@@ -97,13 +112,16 @@ Reason:
 - [AppThemeManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/AppThemeManager.kt:1)
 - [UiLanguageManager.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/UiLanguageManager.kt:1)
 - [EntryDetailScreen.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/presentation/ui/details/EntryDetailScreen.kt:45)
+- [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1)
 - [VERIFICATION.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/VERIFICATION.md:1)
 
 ## Risks / Gaps
 
 - English translations are still draft quality and need review
 - First launch still depends on a full local CSV import, so perceived performance on older phones remains unmeasured
-- Privacy/support/contact details are still placeholders and should be finalized before publication
+- Release signing is still not configured
+- A public privacy policy URL is still missing
+- Store listing assets and Play Console declarations are still not prepared
 - Theme contrast is improved, and the main search/detail surfaces are now dark-aware, but the palette should still be checked visually on device for component-specific edge cases
 - Search semantics are still muddy: source-language lookup and target-language display are separate, but the UI presents them as a single direction
 - Training currently uses live dictionary entries rather than a dedicated saved-study deck

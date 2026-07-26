@@ -3,6 +3,7 @@ package com.avardiction.app.presentation.ui.search
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -11,10 +12,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +72,8 @@ private const val BENCHMARK_SEARCH_RESULTS_TAG = "search_results"
 private const val BENCHMARK_SEARCH_LOADING_TAG = "search_loading"
 private const val BENCHMARK_SEARCH_EMPTY_TAG = "search_empty"
 private const val BENCHMARK_DATABASE_BUILD_TAG = "database_build_loading"
+private val PrimaryContentMaxWidth = 840.dp
+private val TrainingCardMaxWidth = 680.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -76,17 +83,17 @@ fun SearchScreen(
 ) {
     val uiState = viewModel.uiState
     val context = LocalContext.current
-    var directionMenuExpanded by remember { mutableStateOf(false) }
-    var actionsMenuExpanded by remember { mutableStateOf(false) }
-    var settingsSheetExpanded by remember { mutableStateOf(false) }
-    var uiLanguageDialogExpanded by remember { mutableStateOf(false) }
-    var themeDialogExpanded by remember { mutableStateOf(false) }
-    var aboutDialogExpanded by remember { mutableStateOf(false) }
-    var privacyDialogExpanded by remember { mutableStateOf(false) }
-    var supportDialogExpanded by remember { mutableStateOf(false) }
-    var referencesDialogExpanded by remember { mutableStateOf(false) }
-    var coverageDialogExpanded by remember { mutableStateOf(false) }
-    var selectedTab by remember { mutableStateOf(SearchTab.Search) }
+    var directionMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var actionsMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var settingsSheetExpanded by rememberSaveable { mutableStateOf(false) }
+    var uiLanguageDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var themeDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var aboutDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var privacyDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var supportDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var referencesDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var coverageDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(SearchTab.Search) }
     val selectedEntry = selectedEntry(uiState)
 
     if (selectedEntry != null) {
@@ -146,7 +153,10 @@ fun SearchScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .align(Alignment.TopCenter)
+                    .widthIn(max = PrimaryContentMaxWidth)
+                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -672,7 +682,7 @@ private fun AboutAppDialog(
     val context = LocalContext.current
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
     val versionName = packageInfo.versionName ?: "?"
-    val versionCode = packageInfo.longVersionCode
+    val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1054,6 +1064,10 @@ private fun SearchResultsContent(
     onBrowseLetterSelected: (String) -> Unit,
     onBrowseBack: () -> Unit
 ) {
+    val resultsListState = rememberSaveable(uiState.query, saver = LazyListState.Saver) {
+        LazyListState()
+    }
+
     if (uiState.databaseBuildStage != null) {
         DatabaseBuildLoadingState(
             stage = uiState.databaseBuildStage,
@@ -1092,6 +1106,7 @@ private fun SearchResultsContent(
         modifier = Modifier
             .fillMaxSize()
             .testTag(BENCHMARK_SEARCH_RESULTS_TAG),
+        state = resultsListState,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
@@ -1131,6 +1146,9 @@ private fun AlphabetBrowseContent(
     onBrowseLetterSelected: (String) -> Unit,
     onBrowseBack: () -> Unit
 ) {
+    val browseListState = rememberSaveable(uiState.selectedBrowseLetter, saver = LazyListState.Saver) {
+        LazyListState()
+    }
     val selectedLetter = uiState.selectedBrowseLetter
 
     if (selectedLetter == null) {
@@ -1173,6 +1191,7 @@ private fun AlphabetBrowseContent(
             }
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize(),
+                state = browseListState,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
@@ -1200,6 +1219,9 @@ private fun AlphabetChooserContent(
     availableLetters: List<String>,
     onLetterSelected: (String) -> Unit
 ) {
+    val gridState = rememberSaveable(sourceLanguageCode, saver = LazyGridState.Saver) {
+        LazyGridState()
+    }
     val letters = browseAlphabetLetters(
         sourceLanguageCode = sourceLanguageCode,
         availableLetters = availableLetters
@@ -1208,6 +1230,7 @@ private fun AlphabetChooserContent(
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 56.dp),
         modifier = Modifier.fillMaxSize(),
+        state = gridState,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
@@ -1328,6 +1351,9 @@ private fun FavoritesContent(
     onEntryClick: (Long) -> Unit,
     onFavoriteClick: (Long) -> Unit
 ) {
+    val favoritesListState = rememberSaveable(saver = LazyListState.Saver) {
+        LazyListState()
+    }
     if (favorites.isEmpty()) {
         MessageCard(
             title = stringResource(R.string.no_favorites_title),
@@ -1338,6 +1364,7 @@ private fun FavoritesContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = favoritesListState,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
@@ -1359,6 +1386,9 @@ private fun RecentContent(
     recentSearches: List<RecentSearch>,
     onRecentSelected: (RecentSearch) -> Unit
 ) {
+    val recentListState = rememberSaveable(saver = LazyListState.Saver) {
+        LazyListState()
+    }
     if (recentSearches.isEmpty()) {
         MessageCard(
             title = stringResource(R.string.no_recent_searches_title),
@@ -1369,6 +1399,7 @@ private fun RecentContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = recentListState,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
@@ -1407,6 +1438,7 @@ private fun RecentContent(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TrainingContent(
     uiState: DictionaryUiState,
@@ -1454,7 +1486,7 @@ private fun TrainingContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                     lineHeight = 22.sp
                 )
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
@@ -1665,8 +1697,9 @@ private fun TrainingFlashcard(
         shadowElevation = 2.dp,
         tonalElevation = 1.dp,
         modifier = Modifier
+            .widthIn(max = TrainingCardMaxWidth)
             .fillMaxWidth()
-            .height(280.dp)
+            .heightIn(min = 280.dp)
             .graphicsLayer {
                 this.rotationY = cardRotationY
                 cameraDistance = 18f * density.density

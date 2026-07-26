@@ -11,6 +11,7 @@ Run these commands before merging or after a meaningful UI/data change:
 ```bash
 ./gradlew :app:compileDebugKotlin
 ./gradlew :app:testDebugUnitTest
+./gradlew :app:lintDebug
 ```
 
 What these checks cover:
@@ -19,6 +20,9 @@ What these checks cover:
 - search normalization behavior still works
 - the CSV asset still has the expected header shape
 - the CSV asset still contains a substantial number of importable rows
+- the Android lint gate still passes
+
+For publication work, also use [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
 
 ## Latest Device Benchmark Snapshot
 
@@ -35,6 +39,20 @@ Latest recorded local macrobenchmark run:
   `Search results list not found for queries ав, аб, а`
 
 Treat this as a development snapshot, not a release gate. The benchmark module is kept local/optional and is not required for normal app shipping.
+
+## Latest Build Verification
+
+Latest recorded build verification:
+
+- Date: July 26, 2026
+- Commands:
+  - `./gradlew :app:testDebugUnitTest`
+  - `./gradlew :app:lintDebug`
+  - `./gradlew help --warning-mode all`
+- Result:
+  - unit tests passed
+  - lint passed
+  - Gradle project warnings were cleaned up
 
 ## Manual Verification
 

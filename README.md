@@ -6,6 +6,7 @@ Project map:
 
 - [Project Index](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/docs/PROJECT_INDEX.md:1)
 - [Project Snapshot](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/docs/PROJECT_SNAPSHOT.md:1)
+- [Release Checklist](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1)
 
 ## Current State
 
@@ -27,7 +28,7 @@ This project is no longer an empty prototype. It now has:
   - training flashcards with chosen-word and random-word modes
   - training roadmap split into flashcards now and voice pronunciation later
   - entry detail screen with notes, metadata, and Russian bridge content
-  - a settings surface for theme, UI language, app info, references, direction counts, and contact placeholder
+  - a settings surface for theme, UI language, app info, references, direction counts, and in-app privacy/support text
 
 ## Important Reality Check
 
@@ -46,7 +47,20 @@ That means:
 - Room
 - KSP
 - Min SDK 24
-- Target / Compile SDK 35
+- Target / Compile SDK 36
+
+## Release Readiness
+
+Publication planning now lives in [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
+
+Current release status:
+
+- Android / AGP / Kotlin build warnings are cleaned up
+- `targetSdk = 36` is already aligned with the August 31, 2026 Google Play target API requirement
+- debug unit tests and lint pass
+- release signing is still not configured
+- a public privacy policy URL is still missing
+- Play Console metadata, Data safety declarations, and store assets are still pending
 
 ## Data Model
 
@@ -132,6 +146,7 @@ Not implemented yet:
 - real bookmark persistence
 - correction submission UI
 - finalized privacy / support / license disclosures
+- release signing and Play upload flow
 
 ## Build
 
@@ -151,8 +166,10 @@ APK build command:
 
 Last verified:
 
+- `:app:testDebugUnitTest` succeeded on July 26, 2026
+- `:app:lintDebug` succeeded on July 26, 2026
+- `./gradlew help --warning-mode all` succeeded without project warnings on July 26, 2026
 - `:app:assembleDebug` succeeded on July 25, 2026
-- `:app:testDebugUnitTest --tests com.avardiction.app.data.local.CsvDictionaryImporterNoteNormalizationTest` succeeded on July 25, 2026
 - Local macrobenchmark snapshot on a Pixel 5 (Android 14) ran on July 25, 2026:
   `coldStartup` passed; `searchTypingAndScrollFrames` and `searchTypingAndScrollPower`
   failed with `Search results list not found for queries ав, аб, а`
@@ -172,14 +189,14 @@ Last verified:
 
 ## Recommended Next Steps
 
-1. Stabilize the search macrobenchmark path before treating frame/power numbers as publishable; the latest Pixel 5 run passed `coldStartup` but not the two search benchmarks.
-2. Decide whether unsupported language directions should be hidden, disabled, or labeled more aggressively until data exists.
-3. Add real bookmark storage instead of a note-state icon.
-4. Add correction submission flow backed by the existing `corrections` table.
-5. Review and refine the draft English dataset so `AV -> EN` is not just a machine-assisted bridge.
-6. Decide whether training should use favorites, bookmarks, or a dedicated study list instead of the full live dictionary.
-7. Define the second training mode around voice pronunciation, including audio source, playback, and answer-check flow.
-8. Replace placeholder settings/legal text with real privacy, license, and support details before publishing.
+1. Work through [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1) before a Play submission.
+2. Configure release signing and produce a signed `.aab`.
+3. Publish a real privacy policy URL and align it with the in-app text.
+4. Prepare Play store assets and listing copy.
+5. Decide whether unsupported language directions should be hidden, disabled, or labeled more aggressively until data exists.
+6. Review and refine the draft English dataset so `AV -> EN` is not just a machine-assisted bridge.
+7. Add correction submission flow backed by the existing `corrections` table.
+8. Define the second training mode around voice pronunciation, including audio source, playback, and answer-check flow.
 
 ## Notes
 
@@ -191,5 +208,5 @@ Last verified:
 - The current training flow is stateless practice over visible dictionary entries; it does not yet track progress, scoring, spaced repetition, or voice pronunciation.
 - The Material 3 theme now uses explicit branded light/dark role pairs, including tertiary container roles and stronger outline colors for interactive boundaries.
 - Search and detail screens now derive their major cards, bottom sheets, navigation bar, flashcards, and background gradients from `MaterialTheme.colorScheme` instead of hardcoded light palette tokens.
-- The settings surface now exists, but privacy/support/legal content is still placeholder-level.
+- The settings surface now exists, but a public privacy policy URL and full Play publication metadata are still missing.
 - Lightweight verification guidance lives in [VERIFICATION.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/VERIFICATION.md:1).

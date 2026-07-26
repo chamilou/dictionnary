@@ -34,11 +34,11 @@ What is real today:
 
 - `AV -> RU`
 - `RU -> AV`
+- `AV -> EN`
+- `EN -> AV`
 
 What exists only as draft UX today:
 
-- `AV -> EN`
-- `EN -> AV`
 - `AV -> DE`
 - `DE -> AV`
 - `AV -> ES`
@@ -49,7 +49,8 @@ What exists only as draft UX today:
 Important constraint:
 
 - the importer seeds Avar and Russian rows from the bundled CSV and imports English when a row includes it
-- searching from `en`, `de`, `es`, or `fr` returns no real matches because those translations are not in the database yet
+- English is present but still draft-quality and marked as review-grade data
+- searching from `de`, `es`, or `fr` returns no real matches because those translations are not in the database yet
 
 ## 4. Dataset Status
 
@@ -163,15 +164,29 @@ Not implemented yet:
 
 ## 9.5 Next Session Focus
 
-Next session should focus on release hardening, not feature expansion.
+Next session should focus on publication execution, not feature expansion.
 
 Priority order:
 
-1. Replace placeholder privacy / support / legal content.
-2. Remove, hide, or hard-disable unsupported language directions.
-3. Decide whether draft English quality is acceptable for first public release.
-4. Produce a release build and run a manual device QA pass.
-5. Finalize release metadata and publishing details.
+1. Work through [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
+2. Configure release signing and build the first signed `.aab`.
+3. Publish a real privacy policy URL and align it with the app text.
+4. Remove, hide, or hard-disable unsupported language directions.
+5. Produce a release build and run a manual device QA pass.
+
+## 9.6 Publication Checklist
+
+Google Play publication work is tracked in [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
+
+Current publication state:
+
+- `targetSdk = 36` and `compileSdk = 36`
+- `lintDebug` passes
+- `testDebugUnitTest` passes
+- Gradle / AGP / Kotlin warnings are cleaned up
+- release signing is still missing
+- a public privacy policy URL is still missing
+- Play listing assets and Play Console declarations are still pending
 
 ## 9. Immediate Roadmap
 

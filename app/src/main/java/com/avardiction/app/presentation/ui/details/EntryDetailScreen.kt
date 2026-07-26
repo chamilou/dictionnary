@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -42,6 +46,8 @@ import com.avardiction.app.domain.model.AppLanguage
 import com.avardiction.app.domain.model.DictionaryEntryResult
 import com.avardiction.app.domain.model.EntryTranslation
 import com.avardiction.app.presentation.ui.appLanguageDisplayName
+
+private val DetailContentMaxWidth = 840.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +80,9 @@ fun EntryDetailScreen(
         it.text.normalizedForDetailComparison() in primaryTexts
     }.distinctBy {
         "${it.languageCode}:${it.text.normalizedForDetailComparison()}"
+    }
+    val detailListState = rememberSaveable(entry.entryId, saver = LazyListState.Saver) {
+        LazyListState()
     }
 
     Scaffold(
@@ -112,7 +121,12 @@ fun EntryDetailScreen(
                 .padding(innerPadding)
         ) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .widthIn(max = DetailContentMaxWidth)
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                state = detailListState,
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
