@@ -22,12 +22,12 @@ import com.avardiction.app.domain.model.EntryTranslation
 
 @Composable
 fun WordItem(
+    modifier: Modifier = Modifier,
     entry: DictionaryEntryResult,
     onClick: (Long) -> Unit,
     onFavoriteClick: (Long) -> Unit,
     headlineText: String? = null,
     previewText: String? = null,
-    modifier: Modifier = Modifier
 ) {
     val useDarkSurfaces = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Surface(
@@ -108,7 +108,7 @@ fun WordItem(
 
                 if (!entry.notes.isNullOrBlank()) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_bookmark_outline),
+                        painter = painterResource(R.drawable.ic_notes_outline),
                         contentDescription = stringResource(R.string.has_notes),
                         tint = if (useDarkSurfaces) {
                             MaterialTheme.colorScheme.primary
