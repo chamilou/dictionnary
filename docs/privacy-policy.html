@@ -41,6 +41,39 @@
             box-shadow: 0 18px 50px rgba(43, 33, 24, 0.08);
         }
 
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .lang-switcher {
+            display: inline-flex;
+            gap: 8px;
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #f4eadc;
+        }
+
+        .lang-button {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font: inherit;
+            color: var(--muted);
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .lang-button.is-active {
+            color: #fffdfa;
+            background: var(--accent);
+        }
+
         h1, h2 {
             color: #1b1b18;
             line-height: 1.2;
@@ -65,6 +98,10 @@
             margin-bottom: 1.25rem;
         }
 
+        .lang-panel[hidden] {
+            display: none;
+        }
+
         a {
             color: var(--accent);
         }
@@ -73,73 +110,198 @@
 <body>
     <main>
         <section class="card">
-            <h1>Privacy Policy</h1>
-            <p class="meta">App: AvarDiction<br>Effective date: August 2, 2026</p>
+            <div class="toolbar">
+                <div>
+                    <h1 id="page-title" style="margin-bottom: 0.35rem;">Privacy Policy</h1>
+                    <p class="meta" id="page-meta">App: AvarDiction<br>Effective date: August 2, 2026</p>
+                </div>
+                <div class="lang-switcher" aria-label="Language switcher">
+                    <button class="lang-button is-active" type="button" data-lang="en">English</button>
+                    <button class="lang-button" type="button" data-lang="ru">Русский</button>
+                </div>
+            </div>
 
-            <p>
-                AvarDiction is an offline dictionary application. This Privacy Policy explains
-                how the app handles user and device data.
-            </p>
+            <div class="lang-panel" data-panel="en">
+                <p>
+                    AvarDiction is an offline dictionary application. This Privacy Policy explains
+                    how the app handles user and device data.
+                </p>
 
-            <h2>Data the app stores</h2>
-            <p>
-                AvarDiction stores the following information locally on your device to provide app
-                features:
-            </p>
-            <ul>
-                <li>search history;</li>
-                <li>favorite entries;</li>
-                <li>recently viewed items; and</li>
-                <li>app settings such as theme and interface language.</li>
-            </ul>
+                <h2>Data the app stores</h2>
+                <p>
+                    AvarDiction stores the following information locally on your device to provide app
+                    features:
+                </p>
+                <ul>
+                    <li>search history;</li>
+                    <li>favorite entries;</li>
+                    <li>recently viewed items; and</li>
+                    <li>app settings such as theme and interface language.</li>
+                </ul>
 
-            <h2>Data collection and sharing</h2>
-            <p>
-                AvarDiction does not require account creation and does not collect personal data on
-                a remote server for dictionary use, searches, favorites, or training activity.
-            </p>
-            <p>
-                AvarDiction does not sell user data and does not share app usage data with third
-                parties for advertising or analytics.
-            </p>
+                <h2>Data collection and sharing</h2>
+                <p>
+                    AvarDiction does not require account creation and does not collect personal data on
+                    a remote server for dictionary use, searches, favorites, or training activity.
+                </p>
+                <p>
+                    AvarDiction does not sell user data and does not share app usage data with third
+                    parties for advertising or analytics.
+                </p>
 
-            <h2>Permissions and network use</h2>
-            <p>
-                The app is designed for offline use and does not request sensitive runtime
-                permissions for its core functionality.
-            </p>
+                <h2>Permissions and network use</h2>
+                <p>
+                    The app is designed for offline use and does not request sensitive runtime
+                    permissions for its core functionality.
+                </p>
 
-            <h2>Data retention and deletion</h2>
-            <p>
-                Data stored by AvarDiction remains on your device until you remove it. You can
-                delete this data by clearing the app's storage in Android settings or uninstalling
-                the app.
-            </p>
+                <h2>Data retention and deletion</h2>
+                <p>
+                    Data stored by AvarDiction remains on your device until you remove it. You can
+                    delete this data by clearing the app's storage in Android settings or uninstalling
+                    the app.
+                </p>
 
-            <h2>Device backup</h2>
-            <p>
-                Depending on your Android device and Google backup settings, some app data may be
-                included in system backups controlled by your device or Google account settings.
-            </p>
+                <h2>Device backup</h2>
+                <p>
+                    Depending on your Android device and Google backup settings, some app data may be
+                    included in system backups controlled by your device or Google account settings.
+                </p>
 
-            <h2>Support requests</h2>
-            <p>
-                If you contact support by email, the information you send, such as your email
-                address and message contents, will be used only to respond to your request.
-            </p>
+                <h2>Support requests</h2>
+                <p>
+                    If you contact support by email, the information you send, such as your email
+                    address and message contents, will be used only to respond to your request.
+                </p>
 
-            <h2>Contact</h2>
-            <p>
-                For privacy questions, contact:
-                <a href="mailto:avardiction@gmail.com">avardiction@gmail.com</a>
-            </p>
+                <h2>Contact</h2>
+                <p>
+                    For privacy questions, contact:
+                    <a href="mailto:avardiction@gmail.com">avardiction@gmail.com</a>
+                </p>
 
-            <h2>Changes to this policy</h2>
-            <p>
-                This Privacy Policy may be updated from time to time. Any updated version should be
-                published at the same public URL used in the app listing.
-            </p>
+                <h2>Changes to this policy</h2>
+                <p>
+                    This Privacy Policy may be updated from time to time. Any updated version should be
+                    published at the same public URL used in the app listing.
+                </p>
+            </div>
+
+            <div class="lang-panel" data-panel="ru" hidden>
+                <p>
+                    AvarDiction — это офлайн-приложение словаря. Эта Политика конфиденциальности
+                    объясняет, как приложение обрабатывает данные пользователя и устройства.
+                </p>
+
+                <h2>Какие данные хранит приложение</h2>
+                <p>
+                    Для работы функций AvarDiction локально на устройстве могут сохраняться:
+                </p>
+                <ul>
+                    <li>история поиска;</li>
+                    <li>избранные записи;</li>
+                    <li>недавно просмотренные элементы; и</li>
+                    <li>настройки приложения, включая тему и язык интерфейса.</li>
+                </ul>
+
+                <h2>Сбор и передача данных</h2>
+                <p>
+                    AvarDiction не требует создания учетной записи и не собирает персональные данные
+                    на удаленный сервер для использования словаря, поисковых запросов, избранного или
+                    активности в тренировках.
+                </p>
+                <p>
+                    AvarDiction не продает данные пользователей и не передает данные об использовании
+                    приложения третьим лицам для рекламы или аналитики.
+                </p>
+
+                <h2>Разрешения и работа сети</h2>
+                <p>
+                    Приложение предназначено для офлайн-использования и не запрашивает чувствительные
+                    runtime-разрешения для основной функциональности.
+                </p>
+
+                <h2>Хранение и удаление данных</h2>
+                <p>
+                    Данные, сохраняемые AvarDiction, остаются на вашем устройстве, пока вы их не
+                    удалите. Вы можете удалить эти данные, очистив хранилище приложения в настройках
+                    Android или удалив приложение.
+                </p>
+
+                <h2>Резервные копии устройства</h2>
+                <p>
+                    В зависимости от устройства Android и настроек резервного копирования Google часть
+                    данных приложения может включаться в системные резервные копии, управляемые
+                    настройками устройства или учетной записи Google.
+                </p>
+
+                <h2>Обращения в поддержку</h2>
+                <p>
+                    Если вы связываетесь с поддержкой по электронной почте, отправленная вами
+                    информация, включая адрес электронной почты и содержание сообщения, используется
+                    только для ответа на ваш запрос.
+                </p>
+
+                <h2>Контакты</h2>
+                <p>
+                    По вопросам конфиденциальности:
+                    <a href="mailto:avardiction@gmail.com">avardiction@gmail.com</a>
+                </p>
+
+                <h2>Изменения этой политики</h2>
+                <p>
+                    Эта Политика конфиденциальности может время от времени обновляться. Актуальная
+                    версия должна публиковаться по тому же публичному URL, который указан в карточке
+                    приложения.
+                </p>
+            </div>
         </section>
     </main>
+    <script>
+        const content = {
+            en: {
+                title: "Privacy Policy",
+                meta: "App: AvarDiction<br>Effective date: August 2, 2026"
+            },
+            ru: {
+                title: "Политика конфиденциальности",
+                meta: "Приложение: AvarDiction<br>Дата вступления в силу: 2 августа 2026"
+            }
+        };
+
+        const buttons = document.querySelectorAll(".lang-button");
+        const panels = document.querySelectorAll(".lang-panel");
+        const pageTitle = document.getElementById("page-title");
+        const pageMeta = document.getElementById("page-meta");
+
+        function setLanguage(lang) {
+            const safeLang = content[lang] ? lang : "en";
+            document.documentElement.lang = safeLang;
+            pageTitle.textContent = content[safeLang].title;
+            pageMeta.innerHTML = content[safeLang].meta;
+
+            buttons.forEach((button) => {
+                button.classList.toggle("is-active", button.dataset.lang === safeLang);
+            });
+
+            panels.forEach((panel) => {
+                panel.hidden = panel.dataset.panel !== safeLang;
+            });
+
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set("lang", safeLang);
+            window.history.replaceState({}, "", nextUrl);
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener("click", () => setLanguage(button.dataset.lang));
+        });
+
+        const queryLang = new URL(window.location.href).searchParams.get("lang");
+        const browserLang = navigator.language && navigator.language.toLowerCase().startsWith("ru")
+            ? "ru"
+            : "en";
+        setLanguage(queryLang || browserLang);
+    </script>
 </body>
 </html>
