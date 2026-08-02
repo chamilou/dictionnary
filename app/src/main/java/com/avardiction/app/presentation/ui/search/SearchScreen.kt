@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,7 +65,8 @@ import com.avardiction.app.presentation.ui.details.EntryDetailScreen
 import com.avardiction.app.presentation.viewmodel.DictionaryUiState
 import com.avardiction.app.presentation.viewmodel.DatabaseBuildStage
 import com.avardiction.app.presentation.viewmodel.DictionaryViewModel
-import com.avardiction.app.presentation.viewmodel.DirectionWordCount
+import com.avardiction.app.presentation.viewmodel.LanguageCoverageSupport
+import com.avardiction.app.presentation.viewmodel.LanguageWordCount
 import com.avardiction.app.presentation.viewmodel.TrainingWordSource
 
 private const val BENCHMARK_SEARCH_INPUT_TAG = "search_input"
@@ -233,9 +235,9 @@ fun SearchScreen(
                 }
 
                 if (coverageDialogExpanded) {
-                    DirectionCoverageDialog(
+                    LanguageCoverageDialog(
                         totalEntryCount = uiState.totalEntryCount,
-                        directionWordCounts = uiState.directionWordCounts,
+                        languageWordCounts = uiState.languageWordCounts,
                         isLoading = uiState.isSettingsInfoLoading,
                         onDismiss = { coverageDialogExpanded = false }
                     )
@@ -770,6 +772,7 @@ private fun SupportDialog(onDismiss: () -> Unit) {
         if (intent.resolveActivity(context.packageManager) != null) {
             try {
                 context.startActivity(intent)
+                onDismiss()
             } catch (_: ActivityNotFoundException) {
             }
         }
@@ -795,6 +798,7 @@ private fun SupportDialog(onDismiss: () -> Unit) {
                     Text(
                         text = supportEmail,
                         style = MaterialTheme.typography.titleMedium,
+                        textDecoration = TextDecoration.Underline,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -861,22 +865,27 @@ private fun ReferencesDialog(
 }
 
 @Composable
-private fun DirectionCoverageDialog(
+private fun LanguageCoverageDialog(
     totalEntryCount: Int,
-    directionWordCounts: List<DirectionWordCount>,
+    languageWordCounts: List<LanguageWordCount>,
     isLoading: Boolean,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.direction_coverage_title)) },
+        title = { Text(stringResource(R.string.language_coverage_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.direction_coverage_total_entries_format, totalEntryCount),
+                    text = stringResource(R.string.language_coverage_total_entries_format, totalEntryCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.language_coverage_note),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -887,18 +896,28 @@ private fun DirectionCoverageDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
-                    directionWordCounts.forEach { count ->
+                    languageWordCounts.forEach { count ->
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            val supportLabel = when (count.support) {
+                                LanguageCoverageSupport.SUPPORTED -> null
+                                LanguageCoverageSupport.DRAFT_BRIDGE -> stringResource(R.string.direction_support_draft_bridge)
+                                LanguageCoverageSupport.COMING_SOON -> stringResource(R.string.direction_support_coming_soon)
+                            }
                             Text(
-                                text = stringResource(
-                                    R.string.direction_count_format,
+                                text = if (supportLabel == null) {
                                     stringResource(
-                                        R.string.direction_full_format,
-                                        appLanguageDisplayName(count.sourceLanguageCode),
-                                        appLanguageDisplayName(count.targetLanguageCode)
-                                    ),
-                                    count.count
-                                ),
+                                        R.string.language_count_format,
+                                        appLanguageDisplayName(count.languageCode),
+                                        count.count
+                                    )
+                                } else {
+                                    stringResource(
+                                        R.string.language_count_with_status_format,
+                                        appLanguageDisplayName(count.languageCode),
+                                        count.count,
+                                        supportLabel
+                                    )
+                                },
                                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )

@@ -23,7 +23,7 @@
     <string name="settings_privacy">Privacy</string>
     <string name="settings_support">Support</string>
     <string name="settings_references">References</string>
-    <string name="settings_word_counts">Word counts by direction</string>
+    <string name="settings_word_counts">Approximate word counts</string>
     <string name="settings_about_summary">Offline-first Avar dictionary and training app</string>
     <string name="settings_privacy_summary">On-device storage, no account, no analytics</string>
     <string name="settings_support_summary">Support email: avardiction@gmail.com</string>
@@ -59,8 +59,11 @@
     <string name="references_avar_source">Base Avar-Russian reference: Аварско-русский словарь: около 36 000 слов / под ред. М. М. Гимбатова. Махачкала: ДНЦ РАН, 2006. 2096 с. ISBN 5-94434-023-1.</string>
     <string name="references_english_source">Russian-English reference: В. К. Мюллер. Большой англо-русский, русско-английский словарь = Big English-Russian, Russian-English Dictionary: 200 000 слов и выражений. Москва: Эксмо, 2007. ISBN 978-5-699-23745-6.</string>
     <string name="references_english_note">English translations were prepared using a Russian-English reference base for the bundled app dataset.</string>
-    <string name="direction_coverage_title">Word coverage by direction</string>
-    <string name="direction_coverage_total_entries_format">Total indexed entries: %1$d</string>
+    <string name="language_coverage_title">Approximate words by language</string>
+    <string name="language_coverage_total_entries_format">Total indexed entries: %1$d</string>
+    <string name="language_coverage_note">Counts are approximate and based on indexed entry forms available in each language.</string>
+    <string name="language_count_format">%1$s: %2$d</string>
+    <string name="language_count_with_status_format">%1$s: %2$d (%3$s)</string>
     <string name="direction_count_format">%1$s: %2$d</string>
     <string name="direction_support_draft_bridge">Draft bridge coverage</string>
     <string name="direction_support_coming_soon">Coming soon</string>

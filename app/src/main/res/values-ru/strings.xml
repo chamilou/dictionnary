@@ -23,7 +23,7 @@
     <string name="settings_privacy">Конфиденциальность</string>
     <string name="settings_support">Поддержка</string>
     <string name="settings_references">Источники</string>
-    <string name="settings_word_counts">Количество слов по направлениям</string>
+    <string name="settings_word_counts">Примерное количество слов</string>
     <string name="settings_about_summary">Офлайн-словарь аварского языка и тренировка</string>
     <string name="settings_privacy_summary">Данные хранятся на устройстве, без аккаунта и аналитики</string>
     <string name="settings_support_summary">Email поддержки: avardiction@gmail.com</string>
@@ -59,8 +59,11 @@
     <string name="references_avar_source">Базовый аварско-русский источник: Аварско-русский словарь: около 36 000 слов / под ред. М. М. Гимбатова. Махачкала: ДНЦ РАН, 2006. 2096 с. ISBN 5-94434-023-1.</string>
     <string name="references_english_source">Русско-английский источник: В. К. Мюллер. Большой англо-русский, русско-английский словарь = Big English-Russian, Russian-English Dictionary: 200 000 слов и выражений. Москва: Эксмо, 2007. ISBN 978-5-699-23745-6.</string>
     <string name="references_english_note">Английские переводы подготовлены с использованием русско-английской словарной базы для встроенного набора данных приложения.</string>
-    <string name="direction_coverage_title">Покрытие слов по направлениям</string>
-    <string name="direction_coverage_total_entries_format">Всего проиндексировано записей: %1$d</string>
+    <string name="language_coverage_title">Примерное количество слов по языкам</string>
+    <string name="language_coverage_total_entries_format">Всего проиндексировано записей: %1$d</string>
+    <string name="language_coverage_note">Количество примерное и основано на формах записей, проиндексированных для каждого языка.</string>
+    <string name="language_count_format">%1$s: %2$d</string>
+    <string name="language_count_with_status_format">%1$s: %2$d (%3$s)</string>
     <string name="direction_count_format">%1$s: %2$d</string>
     <string name="direction_support_draft_bridge">Черновое мостовое покрытие</string>
     <string name="direction_support_coming_soon">Скоро</string>

@@ -186,6 +186,17 @@ class DictionaryRepository(context: Context) {
         return dao.countEntries()
     }
 
+    suspend fun countLanguageWords(
+        languageCode: String,
+        includeDraftTranslations: Boolean
+    ): Int {
+        seedIfNeeded()
+        return dao.countEntriesForLanguage(
+            languageCode = languageCode,
+            includeDraft = includeDraftTranslations
+        )
+    }
+
     suspend fun countDirectionWords(
         sourceLanguageCode: String,
         targetLanguageCode: String,

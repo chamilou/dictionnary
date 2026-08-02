@@ -41,6 +41,19 @@ interface DictionaryDao {
 
     @Query(
         """
+        SELECT COUNT(DISTINCT entryId)
+        FROM translations
+        WHERE languageCode = :languageCode
+          AND (:includeDraft = 1 OR checkedStatus NOT IN ('draft', 'machine'))
+        """
+    )
+    suspend fun countEntriesForLanguage(
+        languageCode: String,
+        includeDraft: Boolean
+    ): Int
+
+    @Query(
+        """
         SELECT COUNT(DISTINCT source.entryId)
         FROM translations AS source
         WHERE source.languageCode = :sourceLanguage

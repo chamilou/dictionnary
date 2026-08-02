@@ -29,7 +29,7 @@ enum class TrainingWordSource {
     RANDOM
 }
 
-enum class DirectionCoverageSupport {
+enum class LanguageCoverageSupport {
     SUPPORTED,
     DRAFT_BRIDGE,
     COMING_SOON
@@ -43,11 +43,10 @@ enum class DatabaseBuildStage {
     FINALIZING
 }
 
-data class DirectionWordCount(
-    val sourceLanguageCode: String,
-    val targetLanguageCode: String,
+data class LanguageWordCount(
+    val languageCode: String,
     val count: Int,
-    val support: DirectionCoverageSupport = DirectionCoverageSupport.SUPPORTED
+    val support: LanguageCoverageSupport = LanguageCoverageSupport.SUPPORTED
 )
 
 data class DictionaryUiState(
@@ -77,7 +76,7 @@ data class DictionaryUiState(
     val uiLanguageCode: String? = null,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val totalEntryCount: Int = 0,
-    val directionWordCounts: List<DirectionWordCount> = emptyList(),
+    val languageWordCounts: List<LanguageWordCount> = emptyList(),
     val isSettingsInfoLoading: Boolean = false,
     val databaseBuildStage: DatabaseBuildStage? = null,
     val databaseBuildProcessed: Int = 0,
@@ -202,7 +201,7 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
         if (snapshot.isSettingsInfoLoading) {
             return
         }
-        if (!forceReload && snapshot.directionWordCounts.isNotEmpty()) {
+        if (!forceReload && snapshot.languageWordCounts.isNotEmpty()) {
             return
         }
 
@@ -212,14 +211,17 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
             val totalEntryCount = withContext(Dispatchers.IO) {
                 repository.getEntryCount()
             }
-            val directionWordCounts = withContext(Dispatchers.IO) {
-                coverageDirections.map { direction ->
-                    direction.copy(
-                        count = repository.countDirectionWords(
-                            sourceLanguageCode = direction.sourceLanguageCode,
-                            targetLanguageCode = direction.targetLanguageCode,
-                            includeDraftTranslations = true
-                        )
+            val languageWordCounts = withContext(Dispatchers.IO) {
+                coverageLanguages.map { language ->
+                    language.copy(
+                        count = if (language.support == LanguageCoverageSupport.COMING_SOON) {
+                            0
+                        } else {
+                            repository.countLanguageWords(
+                                languageCode = language.languageCode,
+                                includeDraftTranslations = true
+                            )
+                        }
                     )
                 }
             }
@@ -230,7 +232,7 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
 
             uiState = uiState.copy(
                 totalEntryCount = totalEntryCount,
-                directionWordCounts = directionWordCounts,
+                languageWordCounts = languageWordCounts,
                 isSettingsInfoLoading = false
             )
         }
@@ -598,11 +600,29 @@ class DictionaryViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private companion object {
-        val coverageDirections = listOf(
-            DirectionWordCount(AppLanguage.AV.code, AppLanguage.RU.code, count = 0),
-            DirectionWordCount(AppLanguage.RU.code, AppLanguage.AV.code, count = 0),
-            DirectionWordCount(AppLanguage.AV.code, AppLanguage.EN.code, count = 0),
-            DirectionWordCount(AppLanguage.EN.code, AppLanguage.AV.code, count = 0)
+        val coverageLanguages = listOf(
+            LanguageWordCount(AppLanguage.AV.code, count = 0),
+            LanguageWordCount(AppLanguage.RU.code, count = 0),
+            LanguageWordCount(
+                AppLanguage.EN.code,
+                count = 0,
+                support = LanguageCoverageSupport.DRAFT_BRIDGE
+            ),
+            LanguageWordCount(
+                AppLanguage.DE.code,
+                count = 0,
+                support = LanguageCoverageSupport.COMING_SOON
+            ),
+            LanguageWordCount(
+                AppLanguage.ES.code,
+                count = 0,
+                support = LanguageCoverageSupport.COMING_SOON
+            ),
+            LanguageWordCount(
+                AppLanguage.FR.code,
+                count = 0,
+                support = LanguageCoverageSupport.COMING_SOON
+            )
         )
     }
 }
