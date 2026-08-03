@@ -1,11 +1,13 @@
 package com.avardiction.app.data.repository
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.avardiction.app.data.local.CorrectionEntity
 import com.avardiction.app.data.local.CsvDictionaryImporter
 import com.avardiction.app.data.local.DictionaryDatabase
 import com.avardiction.app.data.local.EntryEntity
 import com.avardiction.app.data.local.FavoriteEntity
+import com.avardiction.app.data.local.ImportedDictionaryData
 import com.avardiction.app.data.local.RecentSearchEntity
 import com.avardiction.app.data.local.SearchNormalizer
 import com.avardiction.app.data.local.TranslationEntity
@@ -452,8 +454,10 @@ class DictionaryRepository(context: Context) {
             try {
                 _seedStatus.value = SeedStatus.InProgress(SeedPhase.PREPARING)
 
-                if (hasEntries) {
-                    database.clearAllTables()
+                val preservedUserData = if (hasEntries) {
+                    snapshotPreservedUserData()
+                } else {
+                    PreservedUserData()
                 }
 
                 val imported = importer.import(SEED_ASSET_NAME) { progress ->
@@ -465,27 +469,46 @@ class DictionaryRepository(context: Context) {
                 }
 
                 val entryChunks = imported.entries.chunked(500)
-                entryChunks.forEachIndexed { index, chunk ->
-                    dao.insertEntries(chunk)
-                    _seedStatus.value = SeedStatus.InProgress(
-                        phase = SeedPhase.INSERTING_ENTRIES,
-                        processed = index + 1,
-                        total = entryChunks.size
+                val translationChunks = imported.translations.chunked(1000)
+                val restoredEntryIds = if (preservedUserData.entryFingerprints.isEmpty()) {
+                    emptyMap()
+                } else {
+                    remapPreservedEntryIds(
+                        fingerprintsByEntryId = preservedUserData.entryFingerprints,
+                        imported = imported
                     )
                 }
 
-                val translationChunks = imported.translations.chunked(1000)
-                translationChunks.forEachIndexed { index, chunk ->
-                    dao.insertTranslations(chunk)
-                    _seedStatus.value = SeedStatus.InProgress(
-                        phase = SeedPhase.INSERTING_TRANSLATIONS,
-                        processed = index + 1,
-                        total = translationChunks.size
+                database.withTransaction {
+                    if (hasEntries) {
+                        dao.deleteAllEntries()
+                    }
+
+                    entryChunks.forEachIndexed { index, chunk ->
+                        dao.insertEntries(chunk)
+                        _seedStatus.value = SeedStatus.InProgress(
+                            phase = SeedPhase.INSERTING_ENTRIES,
+                            processed = index + 1,
+                            total = entryChunks.size
+                        )
+                    }
+
+                    translationChunks.forEachIndexed { index, chunk ->
+                        dao.insertTranslations(chunk)
+                        _seedStatus.value = SeedStatus.InProgress(
+                            phase = SeedPhase.INSERTING_TRANSLATIONS,
+                            processed = index + 1,
+                            total = translationChunks.size
+                        )
+                    }
+
+                    restorePreservedUserData(
+                        preservedUserData = preservedUserData,
+                        restoredEntryIds = restoredEntryIds
                     )
                 }
 
                 _seedStatus.value = SeedStatus.InProgress(SeedPhase.FINALIZING)
-
                 preferences.edit()
                     .putString(KEY_INDEXED_SEED_FINGERPRINT, seedAssetFingerprint)
                     .putInt(KEY_INDEXED_SEED_VERSION, SEED_IMPORT_VERSION)
@@ -494,6 +517,100 @@ class DictionaryRepository(context: Context) {
                 _seedStatus.value = SeedStatus.Idle
             }
         }
+    }
+
+    private suspend fun snapshotPreservedUserData(): PreservedUserData {
+        val favorites = dao.getFavorites()
+        val corrections = dao.getCorrections()
+        val trackedEntryIds = (favorites.map { it.entryId } + corrections.map { it.entryId }).distinct()
+
+        if (trackedEntryIds.isEmpty()) {
+            return PreservedUserData()
+        }
+
+        val entriesById = dao.getEntriesByIds(trackedEntryIds).associateBy { it.id }
+        val translationsByEntryId = dao.getTranslationsByEntryIds(trackedEntryIds).groupBy { it.entryId }
+        val fingerprintsByEntryId = trackedEntryIds.mapNotNull { entryId ->
+            buildEntryFingerprint(
+                entry = entriesById[entryId],
+                translations = translationsByEntryId[entryId].orEmpty()
+            )?.let { entryId to it }
+        }.toMap()
+
+        return PreservedUserData(
+            entryFingerprints = fingerprintsByEntryId,
+            favorites = favorites.filter { it.entryId in fingerprintsByEntryId },
+            corrections = corrections.filter { it.entryId in fingerprintsByEntryId }
+        )
+    }
+
+    private fun remapPreservedEntryIds(
+        fingerprintsByEntryId: Map<Long, EntryFingerprint>,
+        imported: ImportedDictionaryData
+    ): Map<Long, Long> {
+        val importedTranslationsByEntryId = imported.translations.groupBy { it.entryId }
+        val availableEntryIdsByFingerprint = mutableMapOf<EntryFingerprint, ArrayDeque<Long>>()
+
+        imported.entries.forEach { entry ->
+            val fingerprint = buildEntryFingerprint(
+                entry = entry,
+                translations = importedTranslationsByEntryId[entry.id].orEmpty()
+            ) ?: return@forEach
+
+            availableEntryIdsByFingerprint
+                .getOrPut(fingerprint) { ArrayDeque() }
+                .addLast(entry.id)
+        }
+
+        val restoredEntryIds = mutableMapOf<Long, Long>()
+        fingerprintsByEntryId.toSortedMap().forEach { (entryId, fingerprint) ->
+            val restoredEntryId = availableEntryIdsByFingerprint[fingerprint]
+                ?.removeFirstOrNull()
+                ?: return@forEach
+            restoredEntryIds[entryId] = restoredEntryId
+        }
+
+        return restoredEntryIds
+    }
+
+    private suspend fun restorePreservedUserData(
+        preservedUserData: PreservedUserData,
+        restoredEntryIds: Map<Long, Long>
+    ) {
+        preservedUserData.favorites.forEach { favorite ->
+            val restoredEntryId = restoredEntryIds[favorite.entryId] ?: return@forEach
+            dao.insertFavorite(favorite.copy(entryId = restoredEntryId))
+        }
+
+        preservedUserData.corrections.forEach { correction ->
+            val restoredEntryId = restoredEntryIds[correction.entryId] ?: return@forEach
+            dao.insertCorrection(correction.copy(id = 0, entryId = restoredEntryId))
+        }
+    }
+
+    private fun buildEntryFingerprint(
+        entry: EntryEntity?,
+        translations: List<TranslationEntity>
+    ): EntryFingerprint? {
+        entry ?: return null
+
+        fun translationText(languageCode: String): String? {
+            return translations
+                .asSequence()
+                .filter { it.languageCode == languageCode }
+                .sortedByDescending { it.isPrimary }
+                .map { it.text.trim() }
+                .firstOrNull { it.isNotEmpty() }
+        }
+
+        return EntryFingerprint(
+            category = entry.category?.trim().orEmpty(),
+            type = entry.type?.trim().orEmpty(),
+            notes = entry.notes?.trim().orEmpty(),
+            avarText = translationText(AppLanguage.AV.code).orEmpty(),
+            russianText = translationText(AppLanguage.RU.code).orEmpty(),
+            englishText = translationText(AppLanguage.EN.code).orEmpty()
+        )
     }
 
     private fun TranslationEntity.toDomainTranslation(): EntryTranslation {
@@ -511,6 +628,21 @@ class DictionaryRepository(context: Context) {
         val results: List<DictionaryEntryResult>,
         val nextOffset: Int,
         val hasMore: Boolean
+    )
+
+    private data class PreservedUserData(
+        val entryFingerprints: Map<Long, EntryFingerprint> = emptyMap(),
+        val favorites: List<FavoriteEntity> = emptyList(),
+        val corrections: List<CorrectionEntity> = emptyList()
+    )
+
+    private data class EntryFingerprint(
+        val category: String,
+        val type: String,
+        val notes: String,
+        val avarText: String,
+        val russianText: String,
+        val englishText: String
     )
 
     sealed interface SeedStatus {

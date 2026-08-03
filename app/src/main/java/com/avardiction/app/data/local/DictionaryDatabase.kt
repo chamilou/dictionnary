@@ -14,7 +14,7 @@ import androidx.room.RoomDatabase
         CorrectionEntity::class
     ],
     version = 10,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class DictionaryDatabase : RoomDatabase() {
     abstract fun dictionaryDao(): DictionaryDao
@@ -30,7 +30,6 @@ abstract class DictionaryDatabase : RoomDatabase() {
                     DictionaryDatabase::class.java,
                     "dictionary.db"
                 )
-                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                     .also { database ->
                     instance = database

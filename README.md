@@ -57,7 +57,10 @@ Current release status:
 
 - Android / AGP / Kotlin build warnings are cleaned up
 - `targetSdk = 36` is already aligned with the August 31, 2026 Google Play target API requirement
-- debug unit tests and lint pass
+- debug unit tests, lint, and `assembleRelease` pass as of August 3, 2026
+- release shrinking/obfuscation is enabled for `release`
+- Room schema export is enabled and stored under `app/schemas/`
+- Android backup is explicitly disabled in the manifest
 - release signing is still not configured
 - a public privacy policy URL is still missing
 - Play Console metadata, Data safety declarations, and store assets are still pending
@@ -82,10 +85,12 @@ Key files:
 - [CsvDictionaryImporter.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/local/CsvDictionaryImporter.kt:1)
 - [DictionaryRepository.kt](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/app/src/main/java/com/avardiction/app/data/repository/DictionaryRepository.kt:1)
 
-Seed import side effect:
+Seed import behavior during updates:
 
-- When the bundled CSV fingerprint or seed import version changes, the app clears all local Room tables and re-imports the seed data.
-- That also removes locally stored favorites, recent searches, and saved corrections on the device.
+- When the bundled CSV fingerprint or seed import version changes, the app rebuilds dictionary content from the bundled seed data.
+- Favorites and corrections are remapped onto matching re-imported entries instead of being dropped.
+- Recent searches remain stored locally across reseeds.
+- Room destructive migration is disabled; future schema changes require explicit migrations.
 
 Seed import behavior:
 
@@ -166,8 +171,9 @@ APK build command:
 
 Last verified:
 
-- `:app:testDebugUnitTest` succeeded on July 26, 2026
-- `:app:lintDebug` succeeded on July 26, 2026
+- `:app:testDebugUnitTest` succeeded on August 3, 2026
+- `:app:lintDebug` succeeded on August 3, 2026
+- `:app:assembleRelease` succeeded on August 3, 2026 with R8/resource shrinking enabled
 - `./gradlew help --warning-mode all` succeeded without project warnings on July 26, 2026
 - `:app:assembleDebug` succeeded on July 25, 2026
 - Local macrobenchmark snapshot on a Pixel 5 (Android 14) ran on July 25, 2026:
@@ -200,11 +206,11 @@ Last verified:
 
 ## Notes
 
-- The database currently uses `fallbackToDestructiveMigration`, which is acceptable for early iteration but not for production data safety.
 - There is an older reusable `LanguageSelector` composable in the codebase that is not part of the current main screen flow.
 - The current search implementation matches only in the selected source language, then filters visible translations afterward; this works, but the direction model is still more complex than the UI suggests.
 - Alphabet browse is now SQL/index driven through `browseKey` values instead of scanning and deriving letters on the main path of first launch.
 - First-launch waiting is now user-visible through import progress UI, but the import still rebuilds the full local dataset synchronously before search becomes usable.
+- The current production baseline assumes no previously shipped database versions; explicit Room migrations still need to be added before the first future schema bump after release.
 - The current training flow is stateless practice over visible dictionary entries; it does not yet track progress, scoring, spaced repetition, or voice pronunciation.
 - The Material 3 theme now uses explicit branded light/dark role pairs, including tertiary container roles and stronger outline colors for interactive boundaries.
 - Search and detail screens now derive their major cards, bottom sheets, navigation bar, flashcards, and background gradients from `MaterialTheme.colorScheme` instead of hardcoded light palette tokens.

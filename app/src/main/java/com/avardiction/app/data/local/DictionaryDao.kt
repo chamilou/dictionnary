@@ -22,6 +22,9 @@ interface DictionaryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCorrection(correction: CorrectionEntity)
 
+    @Query("DELETE FROM entries")
+    suspend fun deleteAllEntries()
+
     @Query(
         """
         UPDATE translations
@@ -237,6 +240,9 @@ interface DictionaryDao {
     @Query("SELECT entryId FROM favorites ORDER BY createdAt DESC")
     suspend fun getFavoriteEntryIds(): List<Long>
 
+    @Query("SELECT * FROM favorites ORDER BY createdAt DESC")
+    suspend fun getFavorites(): List<FavoriteEntity>
+
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE entryId = :entryId)")
     suspend fun isFavorite(entryId: Long): Boolean
 
@@ -245,6 +251,9 @@ interface DictionaryDao {
 
     @Query("SELECT * FROM recent_searches ORDER BY createdAt DESC LIMIT :limit")
     suspend fun getRecentSearches(limit: Int): List<RecentSearchEntity>
+
+    @Query("SELECT * FROM corrections ORDER BY createdAt ASC")
+    suspend fun getCorrections(): List<CorrectionEntity>
 
     @Query(
         """

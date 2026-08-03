@@ -12,6 +12,7 @@ Run these commands before merging or after a meaningful UI/data change:
 ./gradlew :app:compileDebugKotlin
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:lintDebug
+./gradlew :app:assembleRelease
 ```
 
 What these checks cover:
@@ -21,6 +22,7 @@ What these checks cover:
 - the CSV asset still has the expected header shape
 - the CSV asset still contains a substantial number of importable rows
 - the Android lint gate still passes
+- the production release build still packages successfully with R8/resource shrinking enabled
 
 For publication work, also use [RELEASE_CHECKLIST.md](/Users/shamilidrisov/AndroidStudioProjects/dictionnary/RELEASE_CHECKLIST.md:1).
 
@@ -44,15 +46,15 @@ Treat this as a development snapshot, not a release gate. The benchmark module i
 
 Latest recorded build verification:
 
-- Date: July 26, 2026
+- Date: August 3, 2026
 - Commands:
   - `./gradlew :app:testDebugUnitTest`
   - `./gradlew :app:lintDebug`
-  - `./gradlew help --warning-mode all`
+  - `./gradlew :app:assembleRelease`
 - Result:
   - unit tests passed
   - lint passed
-  - Gradle project warnings were cleaned up
+  - release build passed with R8/resource shrinking enabled
 
 ## Manual Verification
 
@@ -63,6 +65,7 @@ Use this short checklist when you want to spot-check the trusted dictionary data
 - uninstall the app or clear app storage
 - launch the app
 - confirm the first search is responsive after initial seed
+- confirm the app becomes usable after the staged import completes
 
 ### 2. Avar -> Russian Spot Checks
 
@@ -107,6 +110,15 @@ For each sample:
 - back from detail returns to the previous tab/state
 - favorite toggle still works from list and detail views
 - recent searches still restore query and direction
+
+### 6. Reseed Preservation
+
+- favorite at least one entry
+- perform at least one recent search
+- replace the bundled CSV or bump the seed import version in development
+- relaunch and let reseeding complete
+- confirm favorites still point to the expected entries
+- confirm recent searches are still present
 
 ## If You Find a Bad Entry
 

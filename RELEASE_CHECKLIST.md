@@ -2,12 +2,16 @@
 
 This checklist tracks what is still required to publish `dictionnary` on Google Play.
 
-Current status as of July 26, 2026:
+Current status as of August 3, 2026:
 
 - `targetSdk = 36` and `compileSdk = 36`
 - `testDebugUnitTest` passes
 - `lintDebug` passes
+- `assembleRelease` passes
 - Gradle warning cleanup is complete
+- Release shrinking/obfuscation is enabled for `release`
+- Room schema export is enabled and checked into `app/schemas/`
+- Android backup is disabled with `android:allowBackup="false"`
 - Release signing is not configured yet
 - A public privacy policy URL is not set yet
 - Play Console declarations and store assets are not prepared yet
@@ -18,7 +22,6 @@ Current status as of July 26, 2026:
 - [ ] Add release signing config for the Play upload build.
 - [ ] Build and verify a signed Android App Bundle (`.aab`).
 - [ ] Bump `versionCode` and set a production `versionName`.
-- [ ] Decide whether release builds should keep `isMinifyEnabled = false` or enable shrinking/obfuscation.
 - [ ] Publish a real privacy policy page at a public URL.
 - [ ] Make sure in-app privacy/support text matches the public privacy policy.
 - [ ] Review unsupported or draft language directions and hide, disable, or label them clearly.
@@ -64,6 +67,10 @@ Current status as of July 26, 2026:
 - [x] `compileSdk = 36`
 - [x] `testDebugUnitTest` passes
 - [x] `lintDebug` passes
+- [x] `assembleRelease` passes
+- [x] Release shrinking/obfuscation enabled
+- [x] Room schema export enabled
+- [x] Backup policy made explicit in manifest
 - [ ] Release signing configured
 - [ ] Public privacy policy URL published
 - [ ] Signed release bundle built
