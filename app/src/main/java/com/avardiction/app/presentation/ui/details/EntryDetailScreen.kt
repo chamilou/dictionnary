@@ -11,17 +11,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +44,6 @@ import com.avardiction.app.presentation.ui.appLanguageDisplayName
 
 private val DetailContentMaxWidth = 840.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryDetailScreen(
     entry: DictionaryEntryResult,
@@ -54,10 +51,38 @@ fun EntryDetailScreen(
     directionLabel: String,
     onBack: () -> Unit,
     onFavoriteClick: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showTopBar: Boolean = true,
+    enableBackHandler: Boolean = true,
+    showDirectionSubtitle: Boolean = true
 ) {
-    BackHandler(onBack = onBack)
+    if (enableBackHandler) {
+        BackHandler(onBack = onBack)
+    }
 
+    EntryDetailContent(
+        entry = entry,
+        targetLanguageCode = targetLanguageCode,
+        directionLabel = directionLabel,
+        onBack = onBack,
+        onFavoriteClick = onFavoriteClick,
+        modifier = modifier.fillMaxSize(),
+        showHeader = showTopBar,
+        showDirectionSubtitle = showDirectionSubtitle
+    )
+}
+
+@Composable
+private fun EntryDetailContent(
+    entry: DictionaryEntryResult,
+    targetLanguageCode: String,
+    directionLabel: String,
+    onBack: () -> Unit,
+    onFavoriteClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    showHeader: Boolean,
+    showDirectionSubtitle: Boolean
+) {
     val targetTranslation = entry.translations.firstOrNull {
         it.languageCode == targetLanguageCode &&
             targetLanguageCode != AppLanguage.ALL.code &&
@@ -82,120 +107,144 @@ fun EntryDetailScreen(
         LazyListState()
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = stringResource(R.string.entry_details),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = directionLabel,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back),
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Box(
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(themedDetailBackgroundBrush())
+    ) {
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .background(themedDetailBackgroundBrush())
-                .padding(innerPadding)
+                .align(Alignment.TopCenter)
+                .widthIn(max = DetailContentMaxWidth)
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            state = detailListState,
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .widthIn(max = DetailContentMaxWidth)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                state = detailListState,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
+            if (showHeader) {
                 item {
-                    HeroCard(
-                        entry = entry,
-                        onFavoriteClick = onFavoriteClick
+                    DetailHeaderCard(
+                        directionLabel = directionLabel,
+                        showDirectionSubtitle = showDirectionSubtitle,
+                        onBack = onBack
                     )
                 }
+            }
 
-                if (targetTranslation != null) {
-                    item {
-                        TranslationCard(
-                            title = appLanguageDisplayName(targetTranslation.languageCode),
-                            subtitle = stringResource(R.string.preferred_translation),
-                            translation = targetTranslation
-                        )
-                    }
+            item {
+                HeroCard(
+                    entry = entry,
+                    onFavoriteClick = onFavoriteClick
+                )
+            }
+
+            if (targetTranslation != null) {
+                item {
+                    TranslationCard(
+                        title = appLanguageDisplayName(targetTranslation.languageCode),
+                        subtitle = stringResource(R.string.preferred_translation),
+                        translation = targetTranslation
+                    )
                 }
+            }
 
-                if (russianTranslation != null && russianTranslation.languageCode != targetTranslation?.languageCode) {
-                    item {
-                        TranslationCard(
-                            title = stringResource(R.string.russian_bridge),
-                            subtitle = stringResource(R.string.russian_bridge_subtitle),
-                            translation = russianTranslation
-                        )
-                    }
+            if (russianTranslation != null && russianTranslation.languageCode != targetTranslation?.languageCode) {
+                item {
+                    TranslationCard(
+                        title = stringResource(R.string.russian_bridge),
+                        subtitle = stringResource(R.string.russian_bridge_subtitle),
+                        translation = russianTranslation
+                    )
                 }
+            }
 
-                if (secondaryTranslations.isNotEmpty()) {
-                    item {
-                        SectionCard(title = stringResource(R.string.other_visible_translations)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                secondaryTranslations.forEach { translation ->
-                                    TranslationLine(
-                                        translation = translation
-                                    )
-                                }
+            if (secondaryTranslations.isNotEmpty()) {
+                item {
+                    SectionCard(title = stringResource(R.string.other_visible_translations)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            secondaryTranslations.forEach { translation ->
+                                TranslationLine(
+                                    translation = translation
+                                )
                             }
                         }
                     }
                 }
+            }
 
-                if (!entry.notes.isNullOrBlank()) {
-                    item {
-                        SectionCard(title = stringResource(R.string.notes)) {
-                            Text(
-                                text = entry.notes,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                lineHeight = 22.sp
-                            )
-                        }
+            if (!entry.notes.isNullOrBlank()) {
+                item {
+                    SectionCard(title = stringResource(R.string.notes)) {
+                        Text(
+                            text = entry.notes,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 22.sp
+                        )
                     }
                 }
+            }
 
-                if (!entry.category.isNullOrBlank() || !entry.type.isNullOrBlank()) {
-                    item {
-                        SectionCard(title = stringResource(R.string.entry_metadata)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                if (!entry.category.isNullOrBlank()) {
-                                    MetadataRow(label = stringResource(R.string.category), value = entry.category)
-                                }
-                                if (!entry.type.isNullOrBlank()) {
-                                    MetadataRow(label = stringResource(R.string.type), value = entry.type)
-                                }
+            if (!entry.category.isNullOrBlank() || !entry.type.isNullOrBlank()) {
+                item {
+                    SectionCard(title = stringResource(R.string.entry_metadata)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            if (!entry.category.isNullOrBlank()) {
+                                MetadataRow(label = stringResource(R.string.category), value = entry.category)
+                            }
+                            if (!entry.type.isNullOrBlank()) {
+                                MetadataRow(label = stringResource(R.string.type), value = entry.type)
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+}
 
+@Composable
+private fun DetailHeaderCard(
+    directionLabel: String,
+    showDirectionSubtitle: Boolean,
+    onBack: () -> Unit
+) {
+    Surface(
+        color = themedDetailCardColor(),
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = 1.dp,
+        tonalElevation = 1.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_back),
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.entry_details),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (showDirectionSubtitle) {
+                    Text(
+                        text = directionLabel,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

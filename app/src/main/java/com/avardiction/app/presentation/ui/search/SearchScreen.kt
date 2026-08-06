@@ -3,42 +3,103 @@ package com.avardiction.app.presentation.ui.search
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import androidx.core.content.pm.PackageInfoCompat
-import androidx.compose.animation.*
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -47,11 +108,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.pm.PackageInfoCompat
 import com.avardiction.app.R
 import com.avardiction.app.data.local.SearchNormalizer
 import com.avardiction.app.domain.model.AppLanguage
@@ -62,8 +125,8 @@ import com.avardiction.app.presentation.ui.AppThemeMode
 import com.avardiction.app.presentation.ui.appLanguageDisplayName
 import com.avardiction.app.presentation.ui.components.WordItem
 import com.avardiction.app.presentation.ui.details.EntryDetailScreen
-import com.avardiction.app.presentation.viewmodel.DictionaryUiState
 import com.avardiction.app.presentation.viewmodel.DatabaseBuildStage
+import com.avardiction.app.presentation.viewmodel.DictionaryUiState
 import com.avardiction.app.presentation.viewmodel.DictionaryViewModel
 import com.avardiction.app.presentation.viewmodel.LanguageCoverageSupport
 import com.avardiction.app.presentation.viewmodel.LanguageWordCount
@@ -76,6 +139,16 @@ private const val BENCHMARK_SEARCH_EMPTY_TAG = "search_empty"
 private const val BENCHMARK_DATABASE_BUILD_TAG = "database_build_loading"
 private val PrimaryContentMaxWidth = 840.dp
 private val TrainingCardMaxWidth = 680.dp
+private val ExpandedLayoutBreakpoint = 720.dp
+private val ExpandedLayoutMinHeight = 600.dp
+private val CompactHeightBreakpoint = 480.dp
+private val ExpandedShellMaxWidth = 1560.dp
+private val TabletListPaneMaxWidth = 520.dp
+private val DialogMaxWidth = 560.dp
+private val SheetContentMaxWidth = 560.dp
+private val TopBarControlHeight = 48.dp
+private val TopBarControlHeightCondensed = 40.dp
+private val TrainingCardCompactMaxWidth = 520.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -95,206 +168,197 @@ fun SearchScreen(
     var supportDialogExpanded by rememberSaveable { mutableStateOf(false) }
     var referencesDialogExpanded by rememberSaveable { mutableStateOf(false) }
     var coverageDialogExpanded by rememberSaveable { mutableStateOf(false) }
+    var compactBottomBarVisible by rememberSaveable { mutableStateOf(true) }
     var selectedTab by rememberSaveable { mutableStateOf(SearchTab.Search) }
     val selectedEntry = selectedEntry(uiState)
+    val directionLabel = currentDirectionLabel(
+        sourceLanguageCode = uiState.sourceLanguageCode,
+        targetLanguageCode = uiState.targetLanguageCode
+    )
 
-    if (selectedEntry != null) {
-        EntryDetailScreen(
-            entry = selectedEntry,
-            targetLanguageCode = uiState.targetLanguageCode,
-            directionLabel = currentDirectionLabel(
-                sourceLanguageCode = uiState.sourceLanguageCode,
-                targetLanguageCode = uiState.targetLanguageCode
-            ),
-            onBack = viewModel::closeEntry,
-            onFavoriteClick = viewModel::toggleFavorite,
-            modifier = modifier
-        )
-        return
-    }
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val scope = this
+        val isShortHeightLayout = scope.maxHeight < CompactHeightBreakpoint
+        val isExpandedLayout = scope.maxWidth >= ExpandedLayoutBreakpoint && scope.maxHeight >= ExpandedLayoutMinHeight
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = Color.Transparent,
-        topBar = {
-            ModernTopBar(
-                directionLabel = currentDirectionLabel(
-                    sourceLanguageCode = uiState.sourceLanguageCode,
-                    targetLanguageCode = uiState.targetLanguageCode
-                ),
-                onDirectionClick = { directionMenuExpanded = true },
-                onMenuClick = { actionsMenuExpanded = true },
-                actionsMenuExpanded = actionsMenuExpanded,
-                showAllTranslations = uiState.showAllTranslations,
-                onMenuDismiss = { actionsMenuExpanded = false },
-                onShowAllTranslationsToggle = {
-                    actionsMenuExpanded = false
-                    viewModel.setShowAllTranslations(!uiState.showAllTranslations)
-                },
-                onSettingsClick = {
-                    actionsMenuExpanded = false
-                    viewModel.loadSettingsInfo(forceReload = true)
-                    settingsSheetExpanded = true
-                }
-            )
-        },
-        bottomBar = {
-            ModernBottomNavigation(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                favoriteCount = uiState.favorites.size
-            )
+        LaunchedEffect(isShortHeightLayout, isExpandedLayout) {
+            if (!isShortHeightLayout || isExpandedLayout) {
+                compactBottomBarVisible = true
+            }
         }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(themedScreenBackgroundBrush())
-                .semantics { testTagsAsResourceId = true }
-                .padding(innerPadding)
-        ) {
-            Column(
+
+        if (!isExpandedLayout && selectedEntry != null) {
+            EntryDetailScreen(
+                entry = selectedEntry,
+                targetLanguageCode = uiState.targetLanguageCode,
+                directionLabel = directionLabel,
+                onBack = viewModel::closeEntry,
+                onFavoriteClick = viewModel::toggleFavorite,
+                modifier = Modifier.fillMaxSize(),
+                showDirectionSubtitle = !isShortHeightLayout
+            )
+            return@BoxWithConstraints
+        }
+
+        if (isExpandedLayout && selectedEntry != null) {
+            BackHandler(onBack = viewModel::closeEntry)
+        }
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                ModernTopBar(
+                    directionLabel = directionLabel,
+                    query = uiState.query,
+                    condensed = isShortHeightLayout,
+                    onQueryChange = viewModel::updateQuery,
+                    onDirectionClick = { directionMenuExpanded = true },
+                    onMenuClick = { actionsMenuExpanded = true },
+                    actionsMenuExpanded = actionsMenuExpanded,
+                    showAllTranslations = uiState.showAllTranslations,
+                    onMenuDismiss = { actionsMenuExpanded = false },
+                    onShowAllTranslationsToggle = {
+                        actionsMenuExpanded = false
+                        viewModel.setShowAllTranslations(!uiState.showAllTranslations)
+                    },
+                    onSettingsClick = {
+                        actionsMenuExpanded = false
+                        viewModel.loadSettingsInfo(forceReload = true)
+                        settingsSheetExpanded = true
+                    }
+                )
+            },
+            bottomBar = {
+                if (!isExpandedLayout) {
+                    AnimatedVisibility(
+                        visible = compactBottomBarVisible,
+                        enter = slideInVertically(
+                            initialOffsetY = { fullHeight -> fullHeight },
+                            animationSpec = tween(180)
+                        ) + fadeIn(animationSpec = tween(180)),
+                        exit = slideOutVertically(
+                            targetOffsetY = { fullHeight -> fullHeight },
+                            animationSpec = tween(140)
+                        ) + fadeOut(animationSpec = tween(140))
+                    ) {
+                        ModernBottomNavigation(
+                            selectedTab = selectedTab,
+                            onTabSelected = {
+                                selectedTab = it
+                                compactBottomBarVisible = true
+                            },
+                            favoriteCount = uiState.favorites.size,
+                            condensed = isShortHeightLayout
+                        )
+                    }
+                }
+            }
+        ) { innerPadding ->
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .widthIn(max = PrimaryContentMaxWidth)
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize()
+                    .background(themedScreenBackgroundBrush())
+                    .semantics { testTagsAsResourceId = true }
+                    .padding(innerPadding)
             ) {
-                LanguageDirectionMenu(
-                    expanded = directionMenuExpanded,
-                    currentSourceLanguageCode = uiState.sourceLanguageCode,
-                    onDismiss = { directionMenuExpanded = false },
+                SearchScreenOverlays(
+                    uiState = uiState,
+                    context = context,
+                    directionMenuExpanded = directionMenuExpanded,
+                    onDirectionMenuDismiss = { directionMenuExpanded = false },
                     onDirectionSelected = { sourceLanguageCode, targetLanguageCode ->
                         directionMenuExpanded = false
                         viewModel.updateLanguageDirection(sourceLanguageCode, targetLanguageCode)
-                    }
+                    },
+                    settingsSheetExpanded = settingsSheetExpanded,
+                    onSettingsDismiss = { settingsSheetExpanded = false },
+                    onThemeClick = { themeDialogExpanded = true },
+                    onUiLanguageClick = { uiLanguageDialogExpanded = true },
+                    onAboutClick = { aboutDialogExpanded = true },
+                    onPrivacyClick = { privacyDialogExpanded = true },
+                    onSupportClick = { supportDialogExpanded = true },
+                    onReferencesClick = { referencesDialogExpanded = true },
+                    onCoverageClick = {
+                        viewModel.loadSettingsInfo(forceReload = true)
+                        coverageDialogExpanded = true
+                    },
+                    uiLanguageDialogExpanded = uiLanguageDialogExpanded,
+                    onUiLanguageDismiss = { uiLanguageDialogExpanded = false },
+                    onUiLanguageSelected = { languageCode ->
+                        uiLanguageDialogExpanded = false
+                        viewModel.updateUiLanguage(languageCode)
+                        (context as? android.app.Activity)?.recreate()
+                    },
+                    themeDialogExpanded = themeDialogExpanded,
+                    onThemeDialogDismiss = { themeDialogExpanded = false },
+                    onThemeSelected = {
+                        themeDialogExpanded = false
+                        viewModel.updateThemeMode(it)
+                    },
+                    aboutDialogExpanded = aboutDialogExpanded,
+                    onAboutDismiss = { aboutDialogExpanded = false },
+                    privacyDialogExpanded = privacyDialogExpanded,
+                    onPrivacyDismiss = { privacyDialogExpanded = false },
+                    supportDialogExpanded = supportDialogExpanded,
+                    onSupportDismiss = { supportDialogExpanded = false },
+                    referencesDialogExpanded = referencesDialogExpanded,
+                    onReferencesDismiss = { referencesDialogExpanded = false },
+                    coverageDialogExpanded = coverageDialogExpanded,
+                    onCoverageDismiss = { coverageDialogExpanded = false }
                 )
 
-                if (settingsSheetExpanded) {
-                    SettingsSheet(
-                        themeMode = uiState.themeMode,
-                        uiLanguageLabel = uiLanguageDisplayName(uiState.uiLanguageCode),
-                        totalEntryCount = uiState.totalEntryCount,
-                        isLoading = uiState.isSettingsInfoLoading,
-                        onDismiss = { settingsSheetExpanded = false },
-                        onThemeClick = { themeDialogExpanded = true },
-                        onUiLanguageClick = { uiLanguageDialogExpanded = true },
-                        onAboutClick = { aboutDialogExpanded = true },
-                        onPrivacyClick = { privacyDialogExpanded = true },
-                        onSupportClick = { supportDialogExpanded = true },
-                        onReferencesClick = { referencesDialogExpanded = true },
-                        onCoverageClick = {
-                            viewModel.loadSettingsInfo(forceReload = true)
-                            coverageDialogExpanded = true
-                        }
+                if (isExpandedLayout) {
+                    ExpandedSearchLayout(
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it },
+                        favoriteCount = uiState.favorites.size,
+                        uiState = uiState,
+                        selectedEntry = selectedEntry,
+                        directionLabel = directionLabel,
+                        onEntryClick = viewModel::openEntry,
+                        onFavoriteClick = viewModel::toggleFavorite,
+                        onLoadMore = viewModel::loadMoreSearchResults,
+                        onBrowseLetterSelected = viewModel::selectBrowseLetter,
+                        onBrowseBack = viewModel::clearBrowseLetter,
+                        onQueryChange = viewModel::updateQuery,
+                        onQuickDirectionSelected = viewModel::updateLanguageDirection,
+                        onRecentSelected = {
+                            viewModel.applyRecentSearch(it)
+                            selectedTab = SearchTab.Search
+                        },
+                        onTrainingSourceSelected = viewModel::setTrainingWordSource,
+                        onTrainingPromptChange = viewModel::updateTrainingPrompt,
+                        onTrainingEntrySelected = viewModel::selectTrainingEntry,
+                        onRandomWordClick = viewModel::loadRandomTrainingEntry,
+                        onRevealAnswer = viewModel::revealTrainingAnswer,
+                        onHideAnswer = viewModel::hideTrainingAnswer,
+                        onCloseEntry = viewModel::closeEntry
                     )
-                }
-
-                if (uiLanguageDialogExpanded) {
-                    UiLanguageDialog(
-                        selectedLanguageCode = uiState.uiLanguageCode,
-                        onDismiss = { uiLanguageDialogExpanded = false },
-                        onLanguageSelected = { languageCode ->
-                            uiLanguageDialogExpanded = false
-                            viewModel.updateUiLanguage(languageCode)
-                            (context as? android.app.Activity)?.recreate()
-                        }
+                } else {
+                    CompactSearchLayout(
+                        selectedTab = selectedTab,
+                        uiState = uiState,
+                        condensed = isShortHeightLayout,
+                        onBottomBarVisibilityChange = { compactBottomBarVisible = it || !isShortHeightLayout },
+                        onEntryClick = viewModel::openEntry,
+                        onFavoriteClick = viewModel::toggleFavorite,
+                        onLoadMore = viewModel::loadMoreSearchResults,
+                        onBrowseLetterSelected = viewModel::selectBrowseLetter,
+                        onBrowseBack = viewModel::clearBrowseLetter,
+                        onQueryChange = viewModel::updateQuery,
+                        onQuickDirectionSelected = viewModel::updateLanguageDirection,
+                        onRecentSelected = {
+                            viewModel.applyRecentSearch(it)
+                            selectedTab = SearchTab.Search
+                        },
+                        onTrainingSourceSelected = viewModel::setTrainingWordSource,
+                        onTrainingPromptChange = viewModel::updateTrainingPrompt,
+                        onTrainingEntrySelected = viewModel::selectTrainingEntry,
+                        onRandomWordClick = viewModel::loadRandomTrainingEntry,
+                        onRevealAnswer = viewModel::revealTrainingAnswer,
+                        onHideAnswer = viewModel::hideTrainingAnswer
                     )
-                }
-
-                if (themeDialogExpanded) {
-                    ThemeModeDialog(
-                        selectedThemeMode = uiState.themeMode,
-                        onDismiss = { themeDialogExpanded = false },
-                        onThemeSelected = {
-                            themeDialogExpanded = false
-                            viewModel.updateThemeMode(it)
-                        }
-                    )
-                }
-
-                if (aboutDialogExpanded) {
-                    AboutAppDialog(
-                        totalEntryCount = uiState.totalEntryCount,
-                        onDismiss = { aboutDialogExpanded = false }
-                    )
-                }
-
-                if (privacyDialogExpanded) {
-                    PrivacyDialog(onDismiss = { privacyDialogExpanded = false })
-                }
-
-                if (supportDialogExpanded) {
-                    SupportDialog(onDismiss = { supportDialogExpanded = false })
-                }
-
-                if (referencesDialogExpanded) {
-                    ReferencesDialog(onDismiss = { referencesDialogExpanded = false })
-                }
-
-                if (coverageDialogExpanded) {
-                    LanguageCoverageDialog(
-                        totalEntryCount = uiState.totalEntryCount,
-                        languageWordCounts = uiState.languageWordCounts,
-                        isLoading = uiState.isSettingsInfoLoading,
-                        onDismiss = { coverageDialogExpanded = false }
-                    )
-                }
-
-                AnimatedContent(
-                    targetState = selectedTab,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                                scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)) togetherWith
-                                fadeOut(animationSpec = tween(90))
-                    },
-                    label = "tabContent"
-                ) { targetTab ->
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        when (targetTab) {
-                                SearchTab.Search -> {
-                                    SearchCard(
-                                        query = uiState.query,
-                                        onQueryChange = viewModel::updateQuery
-                                    )
-                                    SearchResultsContent(
-                                    uiState = uiState,
-                                    onEntryClick = viewModel::openEntry,
-                                    onFavoriteClick = viewModel::toggleFavorite,
-                                    onLoadMore = viewModel::loadMoreSearchResults,
-                                    onBrowseLetterSelected = viewModel::selectBrowseLetter,
-                                    onBrowseBack = viewModel::clearBrowseLetter
-                                )
-                            }
-                            SearchTab.Favorites -> FavoritesContent(
-                                favorites = uiState.favorites,
-                                onEntryClick = viewModel::openEntry,
-                                onFavoriteClick = viewModel::toggleFavorite
-                            )
-                            SearchTab.Recent -> RecentContent(
-                                recentSearches = uiState.recentSearches,
-                                onRecentSelected = {
-                                    viewModel.applyRecentSearch(it)
-                                    selectedTab = SearchTab.Search
-                                }
-                            )
-                            SearchTab.Training -> TrainingContent(
-                                uiState = uiState,
-                                onTrainingSourceSelected = viewModel::setTrainingWordSource,
-                                onTrainingPromptChange = viewModel::updateTrainingPrompt,
-                                onTrainingEntrySelected = viewModel::selectTrainingEntry,
-                                onRandomWordClick = viewModel::loadRandomTrainingEntry,
-                                onFavoriteClick = viewModel::toggleFavorite,
-                                onRevealAnswer = viewModel::revealTrainingAnswer,
-                                onHideAnswer = viewModel::hideTrainingAnswer
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -302,8 +366,448 @@ fun SearchScreen(
 }
 
 @Composable
+private fun SearchScreenOverlays(
+    uiState: DictionaryUiState,
+    @Suppress("UNUSED_PARAMETER") context: android.content.Context,
+    directionMenuExpanded: Boolean,
+    onDirectionMenuDismiss: () -> Unit,
+    onDirectionSelected: (String, String) -> Unit,
+    settingsSheetExpanded: Boolean,
+    onSettingsDismiss: () -> Unit,
+    onThemeClick: () -> Unit,
+    onUiLanguageClick: () -> Unit,
+    onAboutClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+    onSupportClick: () -> Unit,
+    onReferencesClick: () -> Unit,
+    onCoverageClick: () -> Unit,
+    uiLanguageDialogExpanded: Boolean,
+    onUiLanguageDismiss: () -> Unit,
+    onUiLanguageSelected: (String?) -> Unit,
+    themeDialogExpanded: Boolean,
+    onThemeDialogDismiss: () -> Unit,
+    onThemeSelected: (AppThemeMode) -> Unit,
+    aboutDialogExpanded: Boolean,
+    onAboutDismiss: () -> Unit,
+    privacyDialogExpanded: Boolean,
+    onPrivacyDismiss: () -> Unit,
+    supportDialogExpanded: Boolean,
+    onSupportDismiss: () -> Unit,
+    referencesDialogExpanded: Boolean,
+    onReferencesDismiss: () -> Unit,
+    coverageDialogExpanded: Boolean,
+    onCoverageDismiss: () -> Unit
+) {
+    LanguageDirectionMenu(
+        expanded = directionMenuExpanded,
+        currentSourceLanguageCode = uiState.sourceLanguageCode,
+        onDismiss = onDirectionMenuDismiss,
+        onDirectionSelected = onDirectionSelected
+    )
+
+    if (settingsSheetExpanded) {
+        SettingsSheet(
+            themeMode = uiState.themeMode,
+            uiLanguageLabel = uiLanguageDisplayName(uiState.uiLanguageCode),
+            totalEntryCount = uiState.totalEntryCount,
+            isLoading = uiState.isSettingsInfoLoading,
+            onDismiss = onSettingsDismiss,
+            onThemeClick = onThemeClick,
+            onUiLanguageClick = onUiLanguageClick,
+            onAboutClick = onAboutClick,
+            onPrivacyClick = onPrivacyClick,
+            onSupportClick = onSupportClick,
+            onReferencesClick = onReferencesClick,
+            onCoverageClick = onCoverageClick
+        )
+    }
+
+    if (uiLanguageDialogExpanded) {
+        UiLanguageDialog(
+            selectedLanguageCode = uiState.uiLanguageCode,
+            onDismiss = onUiLanguageDismiss,
+            onLanguageSelected = onUiLanguageSelected
+        )
+    }
+
+    if (themeDialogExpanded) {
+        ThemeModeDialog(
+            selectedThemeMode = uiState.themeMode,
+            onDismiss = onThemeDialogDismiss,
+            onThemeSelected = onThemeSelected
+        )
+    }
+
+    if (aboutDialogExpanded) {
+        AboutAppDialog(
+            totalEntryCount = uiState.totalEntryCount,
+            onDismiss = onAboutDismiss
+        )
+    }
+
+    if (privacyDialogExpanded) {
+        PrivacyDialog(onDismiss = onPrivacyDismiss)
+    }
+
+    if (supportDialogExpanded) {
+        SupportDialog(onDismiss = onSupportDismiss)
+    }
+
+    if (referencesDialogExpanded) {
+        ReferencesDialog(onDismiss = onReferencesDismiss)
+    }
+
+    if (coverageDialogExpanded) {
+        LanguageCoverageDialog(
+            totalEntryCount = uiState.totalEntryCount,
+            languageWordCounts = uiState.languageWordCounts,
+            isLoading = uiState.isSettingsInfoLoading,
+            onDismiss = onCoverageDismiss
+        )
+    }
+}
+
+@Composable
+private fun CompactSearchLayout(
+    selectedTab: SearchTab,
+    uiState: DictionaryUiState,
+    condensed: Boolean,
+    onBottomBarVisibilityChange: (Boolean) -> Unit,
+    onEntryClick: (Long) -> Unit,
+    onFavoriteClick: (Long) -> Unit,
+    onLoadMore: () -> Unit,
+    onBrowseLetterSelected: (String) -> Unit,
+    onBrowseBack: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    onQuickDirectionSelected: (String, String) -> Unit,
+    onRecentSelected: (RecentSearch) -> Unit,
+    onTrainingSourceSelected: (TrainingWordSource) -> Unit,
+    onTrainingPromptChange: (String) -> Unit,
+    onTrainingEntrySelected: (DictionaryEntryResult) -> Unit,
+    onRandomWordClick: () -> Unit,
+    onRevealAnswer: () -> Unit,
+    onHideAnswer: () -> Unit
+) {
+    val bottomBarScrollBehavior = remember(condensed) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!condensed || source != NestedScrollSource.UserInput) {
+                    return Offset.Zero
+                }
+
+                when {
+                    available.y < -1f -> onBottomBarVisibilityChange(false)
+                    available.y > 1f -> onBottomBarVisibilityChange(true)
+                }
+                return Offset.Zero
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(bottomBarScrollBehavior),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = PrimaryContentMaxWidth)
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(horizontal = if (condensed) 12.dp else 16.dp),
+            verticalArrangement = Arrangement.spacedBy(if (condensed) 10.dp else 16.dp)
+        ) {
+            SearchTabContent(
+                selectedTab = selectedTab,
+                uiState = uiState,
+                condensed = condensed,
+                onEntryClick = onEntryClick,
+                onFavoriteClick = onFavoriteClick,
+                onLoadMore = onLoadMore,
+                onBrowseLetterSelected = onBrowseLetterSelected,
+                onBrowseBack = onBrowseBack,
+                onQueryChange = onQueryChange,
+                onQuickDirectionSelected = onQuickDirectionSelected,
+                onRecentSelected = onRecentSelected,
+                onTrainingSourceSelected = onTrainingSourceSelected,
+                onTrainingPromptChange = onTrainingPromptChange,
+                onTrainingEntrySelected = onTrainingEntrySelected,
+                onRandomWordClick = onRandomWordClick,
+                onRevealAnswer = onRevealAnswer,
+                onHideAnswer = onHideAnswer
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpandedSearchLayout(
+    selectedTab: SearchTab,
+    onTabSelected: (SearchTab) -> Unit,
+    favoriteCount: Int,
+    uiState: DictionaryUiState,
+    selectedEntry: DictionaryEntryResult?,
+    directionLabel: String,
+    onEntryClick: (Long) -> Unit,
+    onFavoriteClick: (Long) -> Unit,
+    onLoadMore: () -> Unit,
+    onBrowseLetterSelected: (String) -> Unit,
+    onBrowseBack: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    onQuickDirectionSelected: (String, String) -> Unit,
+    onRecentSelected: (RecentSearch) -> Unit,
+    onTrainingSourceSelected: (TrainingWordSource) -> Unit,
+    onTrainingPromptChange: (String) -> Unit,
+    onTrainingEntrySelected: (DictionaryEntryResult) -> Unit,
+    onRandomWordClick: () -> Unit,
+    onRevealAnswer: () -> Unit,
+    onHideAnswer: () -> Unit,
+    onCloseEntry: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        ExpandedNavigationRail(
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected,
+            favoriteCount = favoriteCount
+        )
+
+        VerticalDivider(
+            modifier = Modifier.fillMaxHeight(),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+
+        Box(
+            modifier = Modifier
+                .weight(0.95f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = TabletListPaneMaxWidth)
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SearchTabContent(
+                    selectedTab = selectedTab,
+                    uiState = uiState,
+                    condensed = false,
+                    onEntryClick = onEntryClick,
+                    onFavoriteClick = onFavoriteClick,
+                    onLoadMore = onLoadMore,
+                    onBrowseLetterSelected = onBrowseLetterSelected,
+                    onBrowseBack = onBrowseBack,
+                    onQueryChange = onQueryChange,
+                    onQuickDirectionSelected = onQuickDirectionSelected,
+                    onRecentSelected = onRecentSelected,
+                    onTrainingSourceSelected = onTrainingSourceSelected,
+                    onTrainingPromptChange = onTrainingPromptChange,
+                    onTrainingEntrySelected = onTrainingEntrySelected,
+                    onRandomWordClick = onRandomWordClick,
+                    onRevealAnswer = onRevealAnswer,
+                    onHideAnswer = onHideAnswer
+                )
+            }
+        }
+
+        Surface(
+            modifier = Modifier
+                .weight(1.25f)
+                .fillMaxHeight()
+                .widthIn(max = ExpandedShellMaxWidth),
+            color = themedCardColor(),
+            shape = RoundedCornerShape(32.dp),
+            tonalElevation = 1.dp,
+            shadowElevation = 1.dp
+        ) {
+            if (selectedEntry == null) {
+                EntryDetailPlaceholder(
+                    directionLabel = directionLabel,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                EntryDetailScreen(
+                    entry = selectedEntry,
+                    targetLanguageCode = uiState.targetLanguageCode,
+                    directionLabel = directionLabel,
+                    onBack = onCloseEntry,
+                    onFavoriteClick = onFavoriteClick,
+                    modifier = Modifier.fillMaxSize(),
+                    showTopBar = false,
+                    enableBackHandler = false
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchTabContent(
+    selectedTab: SearchTab,
+    uiState: DictionaryUiState,
+    condensed: Boolean,
+    onEntryClick: (Long) -> Unit,
+    onFavoriteClick: (Long) -> Unit,
+    onLoadMore: () -> Unit,
+    onBrowseLetterSelected: (String) -> Unit,
+    onBrowseBack: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") onQueryChange: (String) -> Unit,
+    onQuickDirectionSelected: (String, String) -> Unit,
+    onRecentSelected: (RecentSearch) -> Unit,
+    onTrainingSourceSelected: (TrainingWordSource) -> Unit,
+    onTrainingPromptChange: (String) -> Unit,
+    onTrainingEntrySelected: (DictionaryEntryResult) -> Unit,
+    onRandomWordClick: () -> Unit,
+    onRevealAnswer: () -> Unit,
+    onHideAnswer: () -> Unit
+) {
+    AnimatedContent(
+        targetState = selectedTab,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)) togetherWith
+                fadeOut(animationSpec = tween(90))
+        },
+        label = "tabContent"
+    ) { targetTab ->
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(if (condensed) 10.dp else 16.dp)
+        ) {
+            when (targetTab) {
+                SearchTab.Search -> {
+                    Box(modifier = Modifier.weight(1f, fill = true)) {
+                        SearchResultsContent(
+                            uiState = uiState,
+                            onEntryClick = onEntryClick,
+                            onFavoriteClick = onFavoriteClick,
+                            onLoadMore = onLoadMore,
+                            onBrowseLetterSelected = onBrowseLetterSelected,
+                            onBrowseBack = onBrowseBack,
+                            onQuickDirectionSelected = onQuickDirectionSelected
+                        )
+                    }
+                }
+                SearchTab.Favorites -> Box(modifier = Modifier.fillMaxSize()) {
+                    FavoritesContent(
+                        favorites = uiState.favorites,
+                        onEntryClick = onEntryClick,
+                        onFavoriteClick = onFavoriteClick
+                    )
+                }
+                SearchTab.Recent -> Box(modifier = Modifier.fillMaxSize()) {
+                    RecentContent(
+                        recentSearches = uiState.recentSearches,
+                        onRecentSelected = onRecentSelected
+                    )
+                }
+                SearchTab.Training -> Box(modifier = Modifier.fillMaxSize()) {
+                    TrainingContent(
+                        uiState = uiState,
+                        condensed = condensed,
+                        onTrainingSourceSelected = onTrainingSourceSelected,
+                        onTrainingPromptChange = onTrainingPromptChange,
+                        onTrainingEntrySelected = onTrainingEntrySelected,
+                        onRandomWordClick = onRandomWordClick,
+                        onFavoriteClick = onFavoriteClick,
+                        onRevealAnswer = onRevealAnswer,
+                        onHideAnswer = onHideAnswer
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpandedNavigationRail(
+    selectedTab: SearchTab,
+    onTabSelected: (SearchTab) -> Unit,
+    favoriteCount: Int
+) {
+    val useDarkSurfaces = usesDarkSurfaces()
+    Surface(
+        color = themedCardColor(),
+        shape = RoundedCornerShape(28.dp),
+        tonalElevation = 2.dp,
+        shadowElevation = 1.dp
+    ) {
+        NavigationRail(
+            containerColor = Color.Transparent,
+            modifier = Modifier.padding(vertical = 12.dp)
+        ) {
+            SearchTab.entries.forEach { tab ->
+                NavigationRailItem(
+                    selected = selectedTab == tab,
+                    onClick = { onTabSelected(tab) },
+                    label = { Text(stringResource(tab.labelRes), style = MaterialTheme.typography.labelMedium) },
+                    icon = {
+                        BadgedBox(
+                            badge = {
+                                if (tab == SearchTab.Favorites && favoriteCount > 0) {
+                                    Badge { Text(favoriteCount.toString()) }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(tab.iconRes),
+                                contentDescription = stringResource(tab.labelRes)
+                            )
+                        }
+                    },
+                    colors = NavigationRailItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = if (useDarkSurfaces) 0.82f else 0.6f
+                        ),
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = if (useDarkSurfaces) 0.82f else 0.6f
+                        ),
+                        indicatorColor = if (useDarkSurfaces) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                        }
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EntryDetailPlaceholder(
+    directionLabel: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(themedScreenBackgroundBrush())
+            .padding(horizontal = 28.dp, vertical = 24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        MessageCard(
+            title = stringResource(R.string.tablet_entry_placeholder_title),
+            body = stringResource(R.string.tablet_entry_placeholder_body, directionLabel)
+        )
+    }
+}
+
+@Composable
 private fun ModernTopBar(
     directionLabel: String,
+    query: String,
+    condensed: Boolean,
+    onQueryChange: (String) -> Unit,
     onDirectionClick: () -> Unit,
     onMenuClick: () -> Unit,
     actionsMenuExpanded: Boolean,
@@ -316,32 +820,38 @@ private fun ModernTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = if (condensed) 8.dp else 12.dp, vertical = if (condensed) 4.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(if (condensed) 8.dp else 12.dp)
     ) {
         DirectionButton(
             label = directionLabel,
+            condensed = condensed,
             onClick = onDirectionClick
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                IconButton(onClick = onMenuClick) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_more_vert),
-                        contentDescription = stringResource(R.string.more_actions),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                MoreMenu(
-                    expanded = actionsMenuExpanded,
-                    showAllTranslations = showAllTranslations,
-                    onDismiss = onMenuDismiss,
-                    onShowAllTranslationsToggle = onShowAllTranslationsToggle,
-                    onSettingsClick = onSettingsClick
+        SearchCard(
+            query = query,
+            condensed = condensed,
+            modifier = Modifier.weight(1f),
+            onQueryChange = onQueryChange
+        )
+
+        Box {
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_more_vert),
+                    contentDescription = stringResource(R.string.more_actions),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
+            MoreMenu(
+                expanded = actionsMenuExpanded,
+                showAllTranslations = showAllTranslations,
+                onDismiss = onMenuDismiss,
+                onShowAllTranslationsToggle = onShowAllTranslationsToggle,
+                onSettingsClick = onSettingsClick
+            )
         }
     }
 }
@@ -350,18 +860,25 @@ private fun ModernTopBar(
 private fun ModernBottomNavigation(
     selectedTab: SearchTab,
     onTabSelected: (SearchTab) -> Unit,
-    favoriteCount: Int
+    favoriteCount: Int,
+    condensed: Boolean
 ) {
     val useDarkSurfaces = usesDarkSurfaces()
     NavigationBar(
         containerColor = themedCardColor(),
         tonalElevation = 8.dp,
-        modifier = Modifier.clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        modifier = Modifier.clip(
+            RoundedCornerShape(
+                topStart = if (condensed) 18.dp else 24.dp,
+                topEnd = if (condensed) 18.dp else 24.dp
+            )
+        )
     ) {
         SearchTab.entries.forEach { tab ->
             NavigationBarItem(
                 selected = selectedTab == tab,
                 onClick = { onTabSelected(tab) },
+                alwaysShowLabel = !condensed,
                 label = { Text(stringResource(tab.labelRes), style = MaterialTheme.typography.labelMedium) },
                 icon = {
                     BadgedBox(
@@ -412,9 +929,12 @@ private data class LanguageDirectionOption(
 @Composable
 private fun DirectionButton(
     label: String,
+    condensed: Boolean,
     onClick: () -> Unit
 ) {
+    val controlHeight = if (condensed) TopBarControlHeightCondensed else TopBarControlHeight
     Surface(
+        modifier = Modifier.height(controlHeight),
         onClick = onClick,
         color = themedCardColor(),
         shape = CircleShape,
@@ -422,13 +942,19 @@ private fun DirectionButton(
         shadowElevation = 1.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = if (condensed) 14.dp else 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                style = (if (condensed) {
+                    MaterialTheme.typography.labelLarge
+                } else {
+                    MaterialTheme.typography.titleSmall
+                }).copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary
             )
             Icon(
@@ -542,61 +1068,68 @@ private fun SettingsSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            Text(
-                text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(
+                modifier = Modifier
+                    .widthIn(max = SheetContentMaxWidth)
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            SettingsActionRow(
-                title = stringResource(R.string.settings_theme),
-                subtitle = themeModeDisplayName(themeMode),
-                onClick = onThemeClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_ui_language),
-                subtitle = uiLanguageLabel,
-                onClick = onUiLanguageClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_about),
-                subtitle = stringResource(R.string.settings_about_summary),
-                onClick = onAboutClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_privacy),
-                subtitle = stringResource(R.string.settings_privacy_summary),
-                onClick = onPrivacyClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_support),
-                subtitle = stringResource(R.string.settings_support_summary),
-                onClick = onSupportClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_references),
-                subtitle = stringResource(R.string.settings_references_summary),
-                onClick = onReferencesClick
-            )
-            SettingsActionRow(
-                title = stringResource(R.string.settings_word_counts),
-                subtitle = if (isLoading) {
-                    stringResource(R.string.settings_loading)
-                } else {
-                    stringResource(
-                        R.string.settings_word_counts_summary_format,
-                        totalEntryCount
-                    )
-                },
-                onClick = onCoverageClick
-            )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_theme),
+                    subtitle = themeModeDisplayName(themeMode),
+                    onClick = onThemeClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_ui_language),
+                    subtitle = uiLanguageLabel,
+                    onClick = onUiLanguageClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_about),
+                    subtitle = stringResource(R.string.settings_about_summary),
+                    onClick = onAboutClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_privacy),
+                    subtitle = stringResource(R.string.settings_privacy_summary),
+                    onClick = onPrivacyClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_support),
+                    subtitle = stringResource(R.string.settings_support_summary),
+                    onClick = onSupportClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_references),
+                    subtitle = stringResource(R.string.settings_references_summary),
+                    onClick = onReferencesClick
+                )
+                SettingsActionRow(
+                    title = stringResource(R.string.settings_word_counts),
+                    subtitle = if (isLoading) {
+                        stringResource(R.string.settings_loading)
+                    } else {
+                        stringResource(
+                            R.string.settings_word_counts_summary_format,
+                            totalEntryCount
+                        )
+                    },
+                    onClick = onCoverageClick
+                )
+            }
         }
     }
 }
@@ -640,7 +1173,7 @@ private fun ThemeModeDialog(
 ) {
     val options = listOf(AppThemeMode.SYSTEM, AppThemeMode.LIGHT, AppThemeMode.DARK)
 
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.theme_dialog_title)) },
         text = {
@@ -686,7 +1219,7 @@ private fun AboutAppDialog(
     val versionName = packageInfo.versionName ?: "?"
     val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
 
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.about_app_title)) },
         text = {
@@ -727,7 +1260,7 @@ private fun AboutAppDialog(
 
 @Composable
 private fun PrivacyDialog(onDismiss: () -> Unit) {
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.privacy_title)) },
         text = {
@@ -778,7 +1311,7 @@ private fun SupportDialog(onDismiss: () -> Unit) {
         }
     }
 
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.support_title)) },
         text = {
@@ -826,7 +1359,7 @@ private fun SupportDialog(onDismiss: () -> Unit) {
 private fun ReferencesDialog(
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.references_title)) },
         text = {
@@ -871,7 +1404,7 @@ private fun LanguageCoverageDialog(
     isLoading: Boolean,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.language_coverage_title)) },
         text = {
@@ -940,14 +1473,14 @@ private fun UiLanguageDialog(
     onDismiss: () -> Unit,
     onLanguageSelected: (String?) -> Unit
 ) {
-    val options = listOf<String?>(
+    val options = listOf(
         null,
         AppLanguage.EN.code,
         AppLanguage.RU.code,
         AppLanguage.AV.code
     )
 
-    AlertDialog(
+    AdaptiveAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.ui_language_dialog_title)) },
         text = {
@@ -980,6 +1513,28 @@ private fun UiLanguageDialog(
                 Text(stringResource(R.string.back))
             }
         }
+    )
+}
+
+@Composable
+private fun AdaptiveAlertDialog(
+    onDismissRequest: () -> Unit,
+    title: @Composable (() -> Unit)? = null,
+    text: @Composable (() -> Unit)? = null,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable (() -> Unit)? = null
+) {
+    AlertDialog(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .widthIn(max = DialogMaxWidth),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        onDismissRequest = onDismissRequest,
+        title = title,
+        text = text,
+        confirmButton = confirmButton,
+        dismissButton = dismissButton
     )
 }
 
@@ -1019,11 +1574,33 @@ private fun MessageCard(
 @Composable
 private fun SearchCard(
     query: String,
+    condensed: Boolean,
+    modifier: Modifier = Modifier,
     onQueryChange: (String) -> Unit
 ) {
+    val controlHeight = if (condensed) TopBarControlHeightCondensed else TopBarControlHeight
+    var isFocused by remember { mutableStateOf(false) }
+    val textStyle = if (condensed) {
+        MaterialTheme.typography.bodySmall
+    } else {
+        MaterialTheme.typography.bodyMedium
+    }
+    val leadingIcon: (@Composable (() -> Unit))? = if (!isFocused && query.isBlank()) {
+        {
+            Icon(
+                painter = painterResource(R.drawable.ic_tune),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(if (condensed) 16.dp else 18.dp)
+            )
+        }
+    } else {
+        null
+    }
     Surface(
+        modifier = modifier.height(controlHeight),
         color = themedCardColor(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(if (condensed) 20.dp else 24.dp),
         shadowElevation = 2.dp,
         tonalElevation = 1.dp
     ) {
@@ -1032,36 +1609,41 @@ private fun SearchCard(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .testTag(BENCHMARK_SEARCH_INPUT_TAG)
-                .padding(horizontal = 6.dp, vertical = 4.dp),
+                .onFocusChanged { isFocused = it.isFocused }
+                .padding(
+                    horizontal = 0.dp,
+                    vertical = 0.dp
+                ),
             placeholder = {
                 Text(
                     stringResource(R.string.search_placeholder),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = textStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             },
             singleLine = true,
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_tune),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
-                )
-            },
+            leadingIcon = leadingIcon,
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    IconButton(onClick = { onQueryChange("") }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_more_vert),
-                            contentDescription = stringResource(R.string.clear_query),
-                            modifier = Modifier.size(18.dp)
+                    TextButton(
+                        onClick = { onQueryChange("") },
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.clear_query),
+                            style = if (condensed) {
+                                MaterialTheme.typography.labelSmall
+                            } else {
+                                MaterialTheme.typography.labelMedium
+                            },
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             },
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(if (condensed) 16.dp else 20.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
@@ -1069,7 +1651,7 @@ private fun SearchCard(
                 unfocusedContainerColor = Color.Transparent,
                 cursorColor = MaterialTheme.colorScheme.primary
             ),
-            textStyle = MaterialTheme.typography.bodyLarge
+            textStyle = textStyle
         )
     }
 }
@@ -1081,7 +1663,8 @@ private fun SearchResultsContent(
     onFavoriteClick: (Long) -> Unit,
     onLoadMore: () -> Unit,
     onBrowseLetterSelected: (String) -> Unit,
-    onBrowseBack: () -> Unit
+    onBrowseBack: () -> Unit,
+    onQuickDirectionSelected: (String, String) -> Unit
 ) {
     val resultsListState = rememberSaveable(uiState.query, saver = LazyListState.Saver) {
         LazyListState()
@@ -1169,6 +1752,9 @@ private fun AlphabetBrowseContent(
         LazyListState()
     }
     val selectedLetter = uiState.selectedBrowseLetter
+    var isBrowseHeaderVisible by rememberSaveable(selectedLetter) { mutableStateOf(true) }
+    var previousBrowseIndex by remember(selectedLetter) { mutableStateOf(0) }
+    var previousBrowseOffset by remember(selectedLetter) { mutableStateOf(0) }
 
     if (selectedLetter == null) {
         AlphabetChooserContent(
@@ -1179,14 +1765,40 @@ private fun AlphabetBrowseContent(
         return
     }
 
+    LaunchedEffect(
+        browseListState.firstVisibleItemIndex,
+        browseListState.firstVisibleItemScrollOffset,
+        selectedLetter
+    ) {
+        val index = browseListState.firstVisibleItemIndex
+        val offset = browseListState.firstVisibleItemScrollOffset
+        val isScrollingDown = index < previousBrowseIndex || (index == previousBrowseIndex && offset < previousBrowseOffset)
+        val isScrollingUp = index > previousBrowseIndex || (index == previousBrowseIndex && offset > previousBrowseOffset)
+
+        when {
+            index == 0 && offset == 0 -> isBrowseHeaderVisible = true
+            isScrollingDown -> isBrowseHeaderVisible = true
+            isScrollingUp -> isBrowseHeaderVisible = false
+        }
+
+        previousBrowseIndex = index
+        previousBrowseOffset = offset
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        BrowseResultsHeader(
-            letter = selectedLetter,
-            onBack = onBrowseBack
-        )
+        AnimatedVisibility(
+            visible = isBrowseHeaderVisible,
+            enter = fadeIn(animationSpec = tween(160)) + expandVertically(animationSpec = tween(160)),
+            exit = fadeOut(animationSpec = tween(120)) + shrinkVertically(animationSpec = tween(120))
+        ) {
+            BrowseResultsHeader(
+                letter = selectedLetter,
+                onBack = onBrowseBack
+            )
+        }
 
         when {
             uiState.isBrowseLoading -> Box(
@@ -1209,7 +1821,9 @@ private fun AlphabetBrowseContent(
                 )
             }
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 state = browseListState,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
@@ -1311,11 +1925,12 @@ private fun BrowseResultsHeader(
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 1.dp
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(
                 onClick = onBack,
@@ -1336,6 +1951,8 @@ private fun BrowseResultsHeader(
                 ),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
+                ,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -1461,6 +2078,7 @@ private fun RecentContent(
 @Composable
 private fun TrainingContent(
     uiState: DictionaryUiState,
+    condensed: Boolean,
     onTrainingSourceSelected: (TrainingWordSource) -> Unit,
     onTrainingPromptChange: (String) -> Unit,
     onTrainingEntrySelected: (DictionaryEntryResult) -> Unit,
@@ -1592,6 +2210,7 @@ private fun TrainingContent(
             selectedEntry != null -> {
                 TrainingFlashcard(
                     entry = selectedEntry,
+                    condensed = condensed,
                     sourceLanguageCode = uiState.sourceLanguageCode,
                     targetLanguageCode = uiState.targetLanguageCode,
                     isAnswerVisible = uiState.isTrainingAnswerVisible,
@@ -1683,6 +2302,7 @@ private fun TrainingSuggestionItem(
 @Composable
 private fun TrainingFlashcard(
     entry: DictionaryEntryResult,
+    condensed: Boolean,
     sourceLanguageCode: String,
     targetLanguageCode: String,
     isAnswerVisible: Boolean,
@@ -1716,9 +2336,9 @@ private fun TrainingFlashcard(
         shadowElevation = 2.dp,
         tonalElevation = 1.dp,
         modifier = Modifier
-            .widthIn(max = TrainingCardMaxWidth)
+            .widthIn(max = if (condensed) TrainingCardCompactMaxWidth else TrainingCardMaxWidth)
             .fillMaxWidth()
-            .heightIn(min = 280.dp)
+            .heightIn(min = if (condensed) 220.dp else 280.dp)
             .graphicsLayer {
                 this.rotationY = cardRotationY
                 cameraDistance = 18f * density.density

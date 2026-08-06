@@ -15,6 +15,7 @@
     <string name="tab_favorites">Избранное</string>
     <string name="tab_recent">Недавние</string>
     <string name="tab_training">Тренировка</string>
+    <string name="tab_navigation">Навигация</string>
     <string name="settings">Настройки</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_theme">Тема</string>
@@ -82,7 +83,7 @@
     <string name="no_entries_found_body">Попробуйте другое написание или смените направление перевода в селекторе.</string>
     <string name="alphabet_browse_title">Просмотр по первой букве</string>
     <string name="alphabet_browse_body">Выберите букву текущего языка поиска, чтобы открыть подходящие слова.</string>
-    <string name="alphabet_browse_selected_letter_format">Слова на букву %1$s</string>
+    <string name="alphabet_browse_selected_letter_format">Слова на:  %1$s</string>
     <string name="alphabet_browse_empty_title">Для этой буквы слов нет</string>
     <string name="alphabet_browse_empty_body">Выберите другую букву или смените направление перевода.</string>
     <string name="no_favorites_title">Избранного пока нет</string>
@@ -126,6 +127,8 @@
     <string name="bridge_draft_label">черновой мост</string>
     <string name="coming_soon_label">скоро</string>
     <string name="entry_details">Детали слова</string>
+    <string name="tablet_entry_placeholder_title">Выберите слово</string>
+    <string name="tablet_entry_placeholder_body">Откройте словарную запись в направлении %1$s, чтобы список оставался на экране, пока вы просматриваете детали.</string>
     <string name="back">Назад</string>
     <string name="avar_headword_review_subtitle">Основная словарная форма для этой записи</string>
     <string name="preferred_translation">Предпочтительный перевод</string>
