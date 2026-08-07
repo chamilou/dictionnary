@@ -11,6 +11,7 @@
     <string name="direction_short_format">%1$s -&gt; %2$s</string>
     <string name="show_all_translations">Киналго</string>
     <string name="more_actions">ТIадегм</string>
+    <string name="tab_navigation">Навигация</string>
     <string name="tab_search">Балагье</string>
     <string name="tab_favorites">ТIаса рищарал</string>
     <string name="tab_recent">Цересел</string>
@@ -155,6 +156,8 @@
     <string name="language_selector_label_format">%1$s %2$s</string>
     <string name="matched_in_format">matched in %1$s</string>
     <string name="bridge_via_russian_short">bridge via RU</string>
+    <string name="tablet_entry_placeholder_title">РагIи тIаса бище</string>
+    <string name="tablet_entry_placeholder_body">%1$s рахъалда словаралъул язихъ рагье, список экраналда хутIизе ва баянти цIализе.</string>
     <plurals name="translations_count">
         <item quantity="one">%d translation</item>
         <item quantity="other">%d translations</item>
